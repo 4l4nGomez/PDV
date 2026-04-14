@@ -7,19 +7,20 @@ namespace BakeryPOS.ViewModels
 {
     public class TicketData : INotifyPropertyChanged
     {
-        private DateTime _saleDate;
+        private DateTime _saleDate = DateTime.Now;
         public DateTime SaleDate { get => _saleDate; set { _saleDate = value; OnPropertyChanged(); } }
 
-        private string _cashierName;
+        private string _cashierName = "Cajero";
         public string CashierName { get => _cashierName; set { _cashierName = value; OnPropertyChanged(); } }
 
-        private string _paymentMethod;
+        private string _paymentMethod = "Efectivo";
         public string PaymentMethod { get => _paymentMethod; set { _paymentMethod = value; OnPropertyChanged(); } }
 
         private decimal _totalAmount;
         public decimal TotalAmount { get => _totalAmount; set { _totalAmount = value; OnPropertyChanged(); } }
 
-        public ObservableCollection<TicketItemData> Items { get; set; } = new ObservableCollection<TicketItemData>();
+        private ObservableCollection<TicketItemData> _items = new ObservableCollection<TicketItemData>();
+        public ObservableCollection<TicketItemData> Items { get => _items; set { _items = value; OnPropertyChanged(); } }
 
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string name = null) =>

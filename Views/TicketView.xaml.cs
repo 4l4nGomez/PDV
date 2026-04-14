@@ -32,7 +32,7 @@ namespace BakeryPOS.Views
                     printContainer.HorizontalAlignment = HorizontalAlignment.Center;
 
                     // Remover el ticket de su padre actual para moverlo al contenedor de impresión
-                    var parent = (StackPanel)TicketBorder.Parent;
+                    var parent = (Grid)TicketBorder.Parent;
                     parent.Children.Remove(TicketBorder);
 
                     // Centrar el ticket dentro del contenedor de ancho completo de la página
