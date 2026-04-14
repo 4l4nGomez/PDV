@@ -246,39 +246,41 @@ namespace BakeryPOS.ViewModels
         [RelayCommand]
         private void CheckoutAndPrint()
         {
-            if (!CurrentTicket.Any()) return;
+            if (CurrentTicket == null || !CurrentTicket.Any()) return;
 
-            // Recopilar datos ANTES de cualquier otra acción en una colección observable e independiente
-            var itemsParaTicket = new System.Collections.ObjectModel.ObservableCollection<TicketItemData>();
-            foreach(var item in CurrentTicket)
+            // 1. CAPTURA INMEDIATA (Copia aislada para que no importe si el carrito se borra)
+            var listaItemsParaTicket = new System.Collections.ObjectModel.ObservableCollection<TicketItemData>();
+            foreach (var item in CurrentTicket)
             {
-                itemsParaTicket.Add(new TicketItemData
+                listaItemsParaTicket.Add(new TicketItemData
                 {
                     ProductName = item.Product?.Name ?? "Producto",
                     Quantity = item.Quantity,
-                    UnitPrice = item.UnitPrice - item.Discount,
+                    UnitPrice = item.UnitPrice,
                     SubTotal = item.SubTotal
                 });
             }
             
-            var totalVenta = TicketTotal;
+            decimal totalFinal = TicketTotal;
+            string nombreCajero = AppSession.CurrentUser?.Username ?? "Cajero";
 
-            // Siempre abrir el diálogo de pago para efectivo
+            // 2. VENTANA DE PAGO (Aquí el carrito aún existe)
             var checkoutWin = new Views.CheckoutView(this);
             checkoutWin.Owner = System.Windows.Application.Current.MainWindow;
             if (checkoutWin.ShowDialog() != true) return;
 
+            // 3. REGISTRO EN BASE DE DATOS (Aquí se limpia el carrito)
             var sale = DoCheckout();
             if (sale != null) 
             {
-                // Crear el objeto de datos del ticket explícitamente
+                // 4. CREAR TICKET CON LA COPIA AISLADA
                 var ticketData = new TicketData
                 {
-                    SaleDate = sale.SaleDate,
-                    CashierName = AppSession.CurrentUser?.Username ?? "Cajero",
-                    PaymentMethod = sale.PaymentMethod,
-                    TotalAmount = totalVenta,
-                    Items = itemsParaTicket
+                    SaleDate = DateTime.Now,
+                    CashierName = nombreCajero,
+                    PaymentMethod = "Efectivo",
+                    TotalAmount = totalFinal,
+                    Items = listaItemsParaTicket
                 };
 
                 var ticketWin = new Views.TicketView(ticketData);
