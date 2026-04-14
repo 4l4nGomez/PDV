@@ -3,7 +3,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Vista Previa del Ticket" Width="260" SizeToContent="Height"
         WindowStartupLocation="CenterOwner" Background="#F1F5F9"
-        WindowStyle="None" AllowsTransparency="True" BorderThickness="1" BorderBrush="#CBD5E1">
+        WindowStyle="None" AllowsTransparency="True" BorderThickness="1" BorderBrush="#CBD5E1"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        SnapsToDevicePixels="True"
+        UseLayoutRounding="True">
     
     <Grid Margin="15">
         <Grid.RowDefinitions>
@@ -15,7 +19,9 @@
         <TextBlock Text="PREVISUALIZACIÓN DE TICKET" FontSize="10" FontWeight="Black" Foreground="#64748B" HorizontalAlignment="Center" Margin="0,0,0,10"/>
 
         <!-- EL TICKET REAL -->
-        <Border Grid.Row="1" x:Name="TicketBorder" Background="White" Width="200" Padding="12" CornerRadius="0">
+        <Border Grid.Row="1" x:Name="TicketBorder" Background="White" Width="200" Padding="12" CornerRadius="0"
+                RenderOptions.BitmapScalingMode="NearestNeighbor"
+                RenderOptions.EdgeMode="Aliased">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.1"/>
             </Border.Effect>
