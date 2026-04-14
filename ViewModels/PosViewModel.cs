@@ -69,6 +69,11 @@ namespace BakeryPOS.ViewModels
             FilterProducts();
         }
 
+        partial void OnCashReceivedTextChanged(string value)
+        {
+            RecalculateChange();
+        }
+
         private void RecalculateChange()
         {
             ChangeDue = CashReceivedNum - TicketTotal;

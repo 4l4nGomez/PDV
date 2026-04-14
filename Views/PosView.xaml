@@ -215,29 +215,37 @@
                     </DataGrid.Columns>
                 </DataGrid>
 
-                <!-- Pie de Carrito con Totales y Cobro -->
-                <Border Grid.Row="2" Background="#1E293B" Padding="20" CornerRadius="0,0,12,12">
+                <!-- Pie de Carrito con Totales y Cobro Optimizado -->
+                <Border Grid.Row="2" Background="#1E293B" Padding="20,15" CornerRadius="0,0,12,12">
                     <StackPanel>
-                        <Grid Margin="0,0,0,20">
-                            <StackPanel>
+                        <Grid Margin="0,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel VerticalAlignment="Center">
                                 <TextBlock Text="TOTAL A PAGAR" FontSize="13" FontWeight="Bold" Foreground="#94A3B8"/>
-                                <TextBlock Text="Sujeto a descuentos" FontSize="11" Foreground="#64748B"/>
+                                <TextBlock Text="Sujeto a descuentos" FontSize="11" Foreground="#64748B" Margin="0,2,0,0"/>
                             </StackPanel>
-                            <TextBlock Text="{Binding TicketTotal, StringFormat=C}" FontSize="40" FontWeight="Black" Foreground="White" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="{Binding TicketTotal, StringFormat=C}" FontSize="38" FontWeight="Black" Foreground="White" VerticalAlignment="Center"/>
                         </Grid>
                         
-                        <UniformGrid Columns="2" Height="80">
-                            <Button Command="{Binding CheckoutCommand}" Background="{StaticResource SecondaryBrush}" Margin="0,0,6,0">
+                        <UniformGrid Columns="2" Height="75">
+                            <!-- Botón SOLO COBRAR con color Secundario forzado -->
+                            <Button Command="{Binding CheckoutCommand}" 
+                                    Background="#475569" BorderThickness="0" Margin="0,0,6,0">
                                 <StackPanel>
-                                    <TextBlock Text="SOLO COBRAR" FontSize="14" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                    <TextBlock Text="[F2]" FontSize="12" Opacity="0.7" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="SOLO COBRAR" FontSize="14" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="[F2]" FontSize="12" Foreground="White" Opacity="0.7" HorizontalAlignment="Center" Margin="0,2,0,0"/>
                                 </StackPanel>
                             </Button>
                             
-                            <Button Command="{Binding CheckoutAndPrintCommand}" Background="{StaticResource AccentBrush}" Margin="6,0,0,0">
+                            <!-- Botón COBRAR+TICKET con color de Acento -->
+                            <Button Command="{Binding CheckoutAndPrintCommand}" 
+                                    Background="{StaticResource AccentBrush}" BorderThickness="0" Margin="6,0,0,0">
                                 <StackPanel>
-                                    <TextBlock Text="COBRAR+TICKET" FontSize="14" FontWeight="Black" HorizontalAlignment="Center"/>
-                                    <TextBlock Text="[F1]" FontSize="12" Opacity="0.8" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="COBRAR + TICKET" FontSize="14" FontWeight="Black" Foreground="White" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="[F1]" FontSize="12" Foreground="White" Opacity="0.8" HorizontalAlignment="Center" Margin="0,2,0,0"/>
                                 </StackPanel>
                             </Button>
                         </UniformGrid>
