@@ -248,6 +248,17 @@ namespace BakeryPOS.ViewModels
         {
             if (!CurrentTicket.Any()) return;
 
+            // Guardar copia de los datos para el ticket ANTES de limpiar el carrito en DoCheckout
+            var itemsParaTicket = CurrentTicket.Select(i => new TicketItemData
+            {
+                ProductName = i.Product.Name,
+                Quantity = i.Quantity,
+                UnitPrice = i.UnitPrice - i.Discount,
+                SubTotal = i.SubTotal
+            }).ToList();
+            
+            var totalVenta = TicketTotal;
+
             // Siempre abrir el diálogo de pago para efectivo
             var checkoutWin = new Views.CheckoutView(this);
             checkoutWin.Owner = System.Windows.Application.Current.MainWindow;
@@ -256,7 +267,7 @@ namespace BakeryPOS.ViewModels
             var sale = DoCheckout();
             if (sale != null) 
             {
-                PrintTicket(sale);
+                PrintTicket(sale, itemsParaTicket, totalVenta);
                 LoadData(); 
             }
         }
@@ -351,32 +362,20 @@ namespace BakeryPOS.ViewModels
             }
         }
 
-        private void PrintTicket(Sale sale)
+        private void PrintTicket(Sale sale, List<TicketItemData> items, decimal total)
         {
-            using (var context = new AppDbContext())
+            var ticketData = new TicketData
             {
-                var ticketData = new TicketData
-                {
-                    SaleDate = sale.SaleDate,
-                    CashierName = AppSession.CurrentUser?.Username,
-                    PaymentMethod = sale.PaymentMethod,
-                    TotalAmount = sale.TotalAmount,
-                    Items = context.SaleItems
-                        .Include(si => si.Product)
-                        .Where(si => si.SaleId == sale.Id)
-                        .Select(i => new TicketItemData
-                        {
-                            ProductName = i.Product.Name,
-                            Quantity = i.Quantity,
-                            UnitPrice = i.UnitPrice - i.Discount,
-                            SubTotal = i.SubTotal
-                        }).ToList()
-                };
+                SaleDate = sale.SaleDate,
+                CashierName = AppSession.CurrentUser?.Username,
+                PaymentMethod = sale.PaymentMethod,
+                TotalAmount = total,
+                Items = items
+            };
 
-                var ticketWin = new Views.TicketView(ticketData);
-                ticketWin.Owner = System.Windows.Application.Current.MainWindow;
-                ticketWin.ShowDialog();
-            }
+            var ticketWin = new Views.TicketView(ticketData);
+            ticketWin.Owner = System.Windows.Application.Current.MainWindow;
+            ticketWin.ShowDialog();
         }
     }
 }
