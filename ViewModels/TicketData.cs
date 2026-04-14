@@ -1,21 +1,23 @@
+using System;
 using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace BakeryPOS.ViewModels
 {
-    public class TicketData
+    public partial class TicketData : ObservableObject
     {
-        public System.DateTime SaleDate { get; set; }
-        public string CashierName { get; set; }
-        public string PaymentMethod { get; set; }
-        public decimal TotalAmount { get; set; }
-        public ObservableCollection<TicketItemData> Items { get; set; } = new();
+        [ObservableProperty] private DateTime _saleDate;
+        [ObservableProperty] private string _cashierName;
+        [ObservableProperty] private string _paymentMethod;
+        [ObservableProperty] private decimal _totalAmount;
+        [ObservableProperty] private ObservableCollection<TicketItemData> _items = new();
     }
 
-    public class TicketItemData
+    public partial class TicketItemData : ObservableObject
     {
-        public string ProductName { get; set; }
-        public int Quantity { get; set; }
-        public decimal UnitPrice { get; set; }
-        public decimal SubTotal { get; set; }
+        [ObservableProperty] private string _productName;
+        [ObservableProperty] private int _quantity;
+        [ObservableProperty] private decimal _unitPrice;
+        [ObservableProperty] private decimal _subTotal;
     }
 }

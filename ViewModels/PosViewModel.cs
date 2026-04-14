@@ -283,9 +283,6 @@ namespace BakeryPOS.ViewModels
 
                 var ticketWin = new Views.TicketView(ticketData);
                 ticketWin.Owner = System.Windows.Application.Current.MainWindow;
-                
-                // Forzar actualización de diseño de la ventana antes de mostrarla
-                ticketWin.UpdateLayout();
                 ticketWin.ShowDialog();
                 
                 LoadData(); 
