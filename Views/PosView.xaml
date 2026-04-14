@@ -15,19 +15,19 @@
     <Grid Background="{StaticResource BgBrush}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="420"/>
+            <ColumnDefinition Width="480"/> <!-- Aumentado de 420 a 480 -->
         </Grid.ColumnDefinitions>
 
         <!-- LADO IZQUIERDO: PRODUCTOS -->
-        <Grid Grid.Column="0" Margin="20">
+        <Grid Grid.Column="0" Margin="20,20,10,20">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/> <!-- Buscador -->
                 <RowDefinition Height="Auto"/> <!-- Categorías -->
                 <RowDefinition Height="*"/>    <!-- Grid de Productos -->
             </Grid.RowDefinitions>
 
-            <!-- Buscador -->
-            <Border Grid.Row="0" Style="{StaticResource ModernCard}" Padding="15" Margin="0,0,0,20">
+            <!-- Buscador: Con ancho máximo para no estirarse demasiado -->
+            <Border Grid.Row="0" Style="{StaticResource ModernCard}" Padding="15" Margin="0,0,0,20" HorizontalAlignment="Left" MinWidth="400" MaxWidth="600">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
