@@ -167,7 +167,8 @@
                 <DataGrid Grid.Row="2" ItemsSource="{Binding CurrentTicket}" AutoGenerateColumns="False" 
                           CanUserAddRows="False" IsReadOnly="True" GridLinesVisibility="None" 
                           BorderThickness="0" Background="Transparent" Margin="5"
-                          RowHeight="60" SelectionUnit="FullRow">
+                          RowHeight="60" SelectionUnit="FullRow"
+                          AlternationCount="2">
                     <DataGrid.Resources>
                         <Style TargetType="DataGridColumnHeader">
                             <Setter Property="Background" Value="Transparent"/>
@@ -186,7 +187,6 @@
                             </Style.Triggers>
                         </Style>
                     </DataGrid.Resources>
-                    <DataGrid.AlternationCount Value="2"/>
                     
                     <DataGrid.Columns>
                         <!-- PRODUCTO -->
