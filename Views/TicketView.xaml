@@ -1,82 +1,69 @@
 <Window x:Class="BakeryPOS.Views.TicketView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:viewModels="clr-namespace:BakeryPOS.ViewModels"
-        mc:Ignorable="d" d:DataContext="{d:DesignInstance viewModels:TicketData}"
         Title="Ticket de Venta" Width="220" SizeToContent="Height"
         WindowStartupLocation="CenterOwner" Background="#F3F4F6"
         WindowStyle="None" AllowsTransparency="True">
     
-    <StackPanel HorizontalAlignment="Center">
-        <Border x:Name="TicketBorder" Background="White" Width="180" Margin="0">
-            <StackPanel Margin="10,15">
+    <StackPanel HorizontalAlignment="Center" Background="#F3F4F6">
+        <Border x:Name="TicketBorder" Background="White" Width="200" Padding="10">
+            <StackPanel>
                 <!-- Header -->
-                <StackPanel Margin="0,0,0,10">
-                    <TextBlock Text="La Espiga de San Pablo" FontSize="11" FontWeight="ExtraBold" HorizontalAlignment="Center" TextAlignment="Center"/>
-                    <TextBlock Text="Calidad - Sabor - Tradición" FontSize="9" HorizontalAlignment="Center" FontStyle="Italic"/>
-                    <TextBlock Text="--------------------------------" FontSize="8" HorizontalAlignment="Center"/>
-                </StackPanel>
+                <TextBlock Text="La Espiga de San Pablo" FontSize="12" FontWeight="Bold" HorizontalAlignment="Center" Foreground="Black"/>
+                <TextBlock Text="Calidad y Tradición" FontSize="10" HorizontalAlignment="Center" Foreground="Black" Margin="0,2,0,5"/>
+                <TextBlock Text="--------------------------------" Foreground="Black" HorizontalAlignment="Center"/>
 
-                <!-- Info -->
-                <StackPanel Margin="0,0,0,5">
-                    <TextBlock Text="{Binding SaleDate, StringFormat='{}Fecha: {0:dd/MM/yyyy HH:mm}'}" FontSize="8"/>
-                    <TextBlock Text="{Binding CashierName, StringFormat='{}Caj: {0}'}" FontSize="8"/>
-                    <TextBlock Text="{Binding PaymentMethod, StringFormat='{}Pago: {0}'}" FontSize="8"/>
-                    <TextBlock Text="--------------------------------" FontSize="8" HorizontalAlignment="Center"/>
-                </StackPanel>
+                <!-- Info Venta -->
+                <TextBlock Text="{Binding SaleDate, StringFormat='{}Fecha: {0:dd/MM/yyyy HH:mm}'}" FontSize="9" Foreground="Black"/>
+                <TextBlock Text="{Binding CashierName, StringFormat='{}Cajero: {0}'}" FontSize="9" Foreground="Black"/>
+                <TextBlock Text="--------------------------------" Foreground="Black" HorizontalAlignment="Center" Margin="0,5"/>
 
-                <!-- Items Header -->
-                <Grid Margin="0,0,0,2">
+                <!-- Encabezado de Columnas -->
+                <Grid Margin="0,0,0,5">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="20"/>
-                        <ColumnDefinition Width="35"/>
-                        <ColumnDefinition Width="35"/>
+                        <ColumnDefinition Width="25"/>
+                        <ColumnDefinition Width="40"/>
+                        <ColumnDefinition Width="45"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="DESC" FontSize="7" FontWeight="Bold"/>
-                    <TextBlock Grid.Column="1" Text="CANT" FontSize="7" FontWeight="Bold" HorizontalAlignment="Center"/>
-                    <TextBlock Grid.Column="2" Text="P.U." FontSize="7" FontWeight="Bold" HorizontalAlignment="Right"/>
-                    <TextBlock Grid.Column="3" Text="SUB" FontSize="7" FontWeight="Bold" HorizontalAlignment="Right"/>
+                    <TextBlock Text="DESC" FontSize="8" FontWeight="Bold" Foreground="Black"/>
+                    <TextBlock Grid.Column="1" Text="CANT" FontSize="8" FontWeight="Bold" Foreground="Black" HorizontalAlignment="Center"/>
+                    <TextBlock Grid.Column="2" Text="P.U." FontSize="8" FontWeight="Bold" Foreground="Black" HorizontalAlignment="Right"/>
+                    <TextBlock Grid.Column="3" Text="SUB" FontSize="8" FontWeight="Bold" Foreground="Black" HorizontalAlignment="Right"/>
                 </Grid>
 
-                <!-- Items List -->
+                <!-- LISTA DE PRODUCTOS (ItemsControl) -->
                 <ItemsControl ItemsSource="{Binding Items}">
                     <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="{x:Type viewModels:TicketItemData}">
-                            <Grid Margin="0,2">
+                        <DataTemplate>
+                            <Grid Margin="0,3">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="20"/>
-                                    <ColumnDefinition Width="35"/>
-                                    <ColumnDefinition Width="35"/>
+                                    <ColumnDefinition Width="25"/>
+                                    <ColumnDefinition Width="40"/>
+                                    <ColumnDefinition Width="45"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="{Binding ProductName}" TextWrapping="Wrap" FontSize="8" VerticalAlignment="Top"/>
-                                <TextBlock Grid.Column="1" Text="{Binding Quantity}" FontSize="8" HorizontalAlignment="Center" VerticalAlignment="Top"/>
-                                <TextBlock Grid.Column="2" Text="{Binding UnitPrice, StringFormat='{}{0:N0}'}" FontSize="8" HorizontalAlignment="Right" VerticalAlignment="Top"/>
-                                <TextBlock Grid.Column="3" Text="{Binding SubTotal, StringFormat='{}{0:N0}'}" FontSize="8" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+                                <!-- Nota: Usamos nombres de propiedades directos -->
+                                <TextBlock Text="{Binding ProductName}" FontSize="9" Foreground="Black" TextWrapping="Wrap" VerticalAlignment="Top"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Quantity}" FontSize="9" Foreground="Black" HorizontalAlignment="Center" VerticalAlignment="Top"/>
+                                <TextBlock Grid.Column="2" Text="{Binding UnitPrice, StringFormat='{}{0:N0}'}" FontSize="9" Foreground="Black" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+                                <TextBlock Grid.Column="3" Text="{Binding SubTotal, StringFormat='{}{0:N0}'}" FontSize="9" FontWeight="Bold" Foreground="Black" HorizontalAlignment="Right" VerticalAlignment="Top"/>
                             </Grid>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
 
-                <!-- Totals -->
-                <StackPanel Margin="0,10,0,5">
-                    <TextBlock Text="--------------------------------" FontSize="8" HorizontalAlignment="Center"/>
-                    <Grid Margin="0,2">
-                        <TextBlock Text="TOTAL:" FontSize="10" FontWeight="Bold" VerticalAlignment="Center"/>
-                        <TextBlock Text="{Binding TotalAmount, StringFormat=C}" FontSize="13" FontWeight="Black" HorizontalAlignment="Right"/>
-                    </Grid>
-                </StackPanel>
+                <!-- Totales -->
+                <TextBlock Text="--------------------------------" Foreground="Black" HorizontalAlignment="Center" Margin="0,5"/>
+                <Grid Margin="0,2">
+                    <TextBlock Text="TOTAL:" FontSize="11" FontWeight="Bold" Foreground="Black" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding TotalAmount, StringFormat=C}" FontSize="15" FontWeight="Black" Foreground="Black" HorizontalAlignment="Right"/>
+                </Grid>
 
-                <!-- Footer -->
-                <StackPanel Margin="0,5,0,0">
-                    <TextBlock Text="¡GRACIAS POR SU COMPRA!" FontSize="8" FontWeight="Bold" HorizontalAlignment="Center"/>
-                </StackPanel>
+                <TextBlock Text="¡GRACIAS POR SU COMPRA!" FontSize="9" FontWeight="Bold" Foreground="Black" HorizontalAlignment="Center" Margin="0,15,0,0"/>
             </StackPanel>
         </Border>
 
-        <Button x:Name="BtnCerrar" Content="IMPRIMIR Y CERRAR" Click="Print_Click" Height="40" Margin="10" Background="#111827" Foreground="White" FontWeight="Bold"/>
+        <Button x:Name="BtnCerrar" Content="IMPRIMIR Y CERRAR" Click="Print_Click" Height="45" Margin="0,10,0,0" Background="#111827" Foreground="White" FontWeight="Bold"/>
     </StackPanel>
 </Window>

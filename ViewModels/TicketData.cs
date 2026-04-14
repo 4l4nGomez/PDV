@@ -1,23 +1,47 @@
 using System;
 using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace BakeryPOS.ViewModels
 {
-    public partial class TicketData : ObservableObject
+    public class TicketData : INotifyPropertyChanged
     {
-        [ObservableProperty] private DateTime _saleDate;
-        [ObservableProperty] private string _cashierName;
-        [ObservableProperty] private string _paymentMethod;
-        [ObservableProperty] private decimal _totalAmount;
-        [ObservableProperty] private ObservableCollection<TicketItemData> _items = new();
+        private DateTime _saleDate;
+        public DateTime SaleDate { get => _saleDate; set { _saleDate = value; OnPropertyChanged(); } }
+
+        private string _cashierName;
+        public string CashierName { get => _cashierName; set { _cashierName = value; OnPropertyChanged(); } }
+
+        private string _paymentMethod;
+        public string PaymentMethod { get => _paymentMethod; set { _paymentMethod = value; OnPropertyChanged(); } }
+
+        private decimal _totalAmount;
+        public decimal TotalAmount { get => _totalAmount; set { _totalAmount = value; OnPropertyChanged(); } }
+
+        public ObservableCollection<TicketItemData> Items { get; set; } = new ObservableCollection<TicketItemData>();
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string name = null) =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 
-    public partial class TicketItemData : ObservableObject
+    public class TicketItemData : INotifyPropertyChanged
     {
-        [ObservableProperty] private string _productName;
-        [ObservableProperty] private int _quantity;
-        [ObservableProperty] private decimal _unitPrice;
-        [ObservableProperty] private decimal _subTotal;
+        private string _productName;
+        public string ProductName { get => _productName; set { _productName = value; OnPropertyChanged(); } }
+
+        private int _quantity;
+        public int Quantity { get => _quantity; set { _quantity = value; OnPropertyChanged(); } }
+
+        private decimal _unitPrice;
+        public decimal UnitPrice { get => _unitPrice; set { _unitPrice = value; OnPropertyChanged(); } }
+
+        private decimal _subTotal;
+        public decimal SubTotal { get => _subTotal; set { _subTotal = value; OnPropertyChanged(); } }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string name = null) =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 }
