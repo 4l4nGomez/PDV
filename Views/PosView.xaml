@@ -121,14 +121,11 @@
                                     CommandParameter="{Binding}" Background="Transparent" Padding="0" Margin="0,0,15,15">
                                 <Button.Template>
                                     <ControlTemplate TargetType="Button">
-                                        <Border x:Name="card" Style="{StaticResource ModernCard}" Padding="15" Width="170" Height="190">
-                                            <StackPanel>
-                                                <Border Width="65" Height="65" Background="#F1F5F9" CornerRadius="32.5" HorizontalAlignment="Center" Margin="0,0,0,12">
-                                                    <TextBlock Text="🍞" FontSize="32" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                </Border>
-                                                <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14" HorizontalAlignment="Center" 
-                                                         TextAlignment="Center" TextWrapping="Wrap" MaxHeight="40" Margin="0,0,0,8" Foreground="{StaticResource SecondaryBrush}"/>
-                                                <TextBlock Text="{Binding Price, StringFormat=C}" FontWeight="Black" FontSize="20" 
+                                        <Border x:Name="card" Style="{StaticResource ModernCard}" Padding="15" Width="170" Height="130">
+                                            <StackPanel VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="15" HorizontalAlignment="Center" 
+                                                         TextAlignment="Center" TextWrapping="Wrap" MaxHeight="50" Margin="0,0,0,10" Foreground="{StaticResource SecondaryBrush}"/>
+                                                <TextBlock Text="{Binding Price, StringFormat=C}" FontWeight="Black" FontSize="22" 
                                                          Foreground="{StaticResource PrimaryBrush}" HorizontalAlignment="Center"/>
                                                 <TextBlock Text="{Binding Stock, StringFormat='{}Stock: {0}'}" FontSize="12" 
                                                          Foreground="{StaticResource TextSecBrush}" HorizontalAlignment="Center" Margin="0,5,0,0"/>
