@@ -1,0 +1,71 @@
+<UserControl x:Class="BakeryPOS.Views.UsersView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="1100">
+    <UserControl.InputBindings>
+        <KeyBinding Key="Enter" Command="{Binding CreateUserCommand}"/>
+    </UserControl.InputBindings>
+    
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="380"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Formulario Crear Usuario -->
+        <Border Grid.Column="0" Style="{StaticResource ModernCard}" Padding="30" Margin="0,0,30,0" VerticalAlignment="Top">
+            <StackPanel>
+                <TextBlock Text="Registrar Nuevo Usuario" FontSize="20" FontWeight="Bold" Margin="0,0,0,25" Foreground="{StaticResource SecondaryBrush}"/>
+                
+                <TextBlock Text="Nombre de Usuario:" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="{StaticResource TextSecBrush}"/>
+                <TextBox Text="{Binding NewUsername, UpdateSourceTrigger=PropertyChanged}" Height="40" Margin="0,0,0,20"/>
+
+                <TextBlock Text="Contraseña:" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="{StaticResource TextSecBrush}"/>
+                <TextBox Text="{Binding NewPassword, UpdateSourceTrigger=PropertyChanged}" Height="40" Margin="0,0,0,20"/>
+
+                <TextBlock Text="Rol de Usuario:" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="{StaticResource TextSecBrush}"/>
+                <ComboBox ItemsSource="{Binding Roles}" SelectedItem="{Binding SelectedRole}" Height="40" Margin="0,0,0,30" VerticalContentAlignment="Center"/>
+
+                <Button Content="CREAR USUARIO" Command="{Binding CreateUserCommand}" IsDefault="True" Height="50" FontSize="15" FontWeight="Bold"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Tabla de Usuarios Existentes -->
+        <Border Grid.Column="1" Style="{StaticResource ModernCard}" Padding="0" ClipToBounds="True">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Border Background="{StaticResource BgBrush}" Padding="20">
+                    <TextBlock Text="Usuarios en el Sistema" FontSize="20" FontWeight="Bold" Foreground="{StaticResource SecondaryBrush}"/>
+                </Border>
+
+                <DataGrid Grid.Row="1" ItemsSource="{Binding Users}" AutoGenerateColumns="False" 
+                          CanUserAddRows="False" SelectionMode="Single" SelectionUnit="FullRow" 
+                          GridLinesVisibility="None" BorderThickness="0" Background="Transparent"
+                          HeadersVisibility="Column" RowHeight="50">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="USUARIO" Binding="{Binding Username}" Width="*" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="ROL" Binding="{Binding Role}" Width="120" IsReadOnly="True"/>
+                        
+                        <DataGridTemplateColumn Width="120">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Content="ELIMINAR" Command="{Binding DataContext.DeleteUserCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                            CommandParameter="{Binding}" Background="{StaticResource DangerBrush}" 
+                                            Height="32" FontSize="11" Margin="10,0"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

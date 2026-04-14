@@ -1,0 +1,95 @@
+<Window x:Class="BakeryPOS.Views.TicketView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Ticket de Venta" Height="Auto" Width="220"
+        WindowStartupLocation="CenterOwner" Background="#F3F4F6"
+        WindowStyle="None" AllowsTransparency="True" SizeToContent="Height">
+    <StackPanel HorizontalAlignment="Center">
+        <Border x:Name="TicketBorder" Background="White" Margin="0" CornerRadius="0" BorderBrush="Transparent" BorderThickness="0" Width="180" HorizontalAlignment="Center">
+            <!-- El Border ahora ocupa los 48mm útiles (180px) para centrar el contenido en el papel -->
+            <Grid Width="160" HorizontalAlignment="Center" Margin="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/> 
+                    <RowDefinition Height="Auto"/> 
+                    <RowDefinition Height="*"/>    
+                    <RowDefinition Height="Auto"/> 
+                    <RowDefinition Height="Auto"/> 
+                </Grid.RowDefinitions>
+
+                <!-- Header -->
+                <StackPanel Grid.Row="0" HorizontalAlignment="Center" Margin="0,0,0,5">
+                    <TextBlock Text="La Espiga de San Pablo" FontSize="11" FontWeight="ExtraBold" Foreground="Black" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Calidad - Sabor - Tradición" FontSize="9" Foreground="Black" HorizontalAlignment="Center" FontStyle="Italic"/>
+                    <TextBlock Text="----------------------" FontSize="10" Foreground="Black" HorizontalAlignment="Center" Margin="0,2"/>
+                </StackPanel>
+
+                <!-- Info -->
+                <StackPanel Grid.Row="1" Margin="0,0,0,5">
+                    <TextBlock Text="{Binding SaleDate, StringFormat='{}Fecha: {0:dd/MM/yyyy HH:mm}'}" FontSize="8" Foreground="Black" HorizontalAlignment="Center"/>
+                    <TextBlock Text="{Binding CashierName, StringFormat='{}Caj: {0}'}" FontSize="8" Foreground="Black" HorizontalAlignment="Center"/>
+                    <TextBlock Text="{Binding PaymentMethod, StringFormat='{}Pago: {0}'}" FontSize="8" Foreground="Black" HorizontalAlignment="Center"/>
+                    <TextBlock Text="🥐🥐🥐🥐🥐🥐🥐" FontSize="11" Foreground="Black" HorizontalAlignment="Center" Margin="0,2"/>
+                </StackPanel>
+
+                <!-- Items -->
+                <StackPanel Grid.Row="2">
+                    <Grid Margin="0,0,0,1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="15"/>
+                            <ColumnDefinition Width="35"/>
+                            <ColumnDefinition Width="35"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="DESCRIPCION" FontSize="7" FontWeight="Bold"/>
+                        <TextBlock Grid.Column="1" Text="CAN" FontSize="7" FontWeight="Bold" HorizontalAlignment="Center" Height="9" VerticalAlignment="Top"/>
+                        <TextBlock Grid.Column="2" Text="P.U." FontSize="7" FontWeight="Bold" HorizontalAlignment="Right"/>
+                        <TextBlock Grid.Column="3" Text="SUB" FontSize="7" FontWeight="Bold" HorizontalAlignment="Right"/>
+                    </Grid>
+
+                    <ItemsControl ItemsSource="{Binding Items}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="15"/>
+                                        <ColumnDefinition Width="35"/>
+                                        <ColumnDefinition Width="35"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding ProductName}" TextWrapping="Wrap" FontSize="7.5" Foreground="Black" VerticalAlignment="Top"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Quantity}" FontSize="7.5" Foreground="Black" HorizontalAlignment="Center" VerticalAlignment="Top"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding UnitPrice, StringFormat='{}{0:N0}'}" FontSize="7.5" Foreground="Black" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+                                    <TextBlock Grid.Column="3" Text="{Binding SubTotal, StringFormat='{}{0:N0}'}" FontSize="7.5" FontWeight="Bold" Foreground="Black" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Text="----------------------" FontSize="10" Foreground="Black" HorizontalAlignment="Center" Margin="0,2"/>
+                </StackPanel>
+
+                <!-- Totals -->
+                <StackPanel Grid.Row="3" Margin="0,2">
+                    <Grid>
+                        <TextBlock Text="TOTAL:" FontSize="10" FontWeight="Bold" Foreground="Black" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding TotalAmount, StringFormat=C}" FontSize="13" FontWeight="Black" Foreground="Black" HorizontalAlignment="Right"/>
+                    </Grid>
+                </StackPanel>
+
+                <!-- Footer -->
+                <StackPanel Grid.Row="4" Margin="0,5,0,0">
+                    <TextBlock Text="¡GRACIAS POR SU COMPRA!" FontSize="7.5" FontWeight="Bold" Foreground="Black" HorizontalAlignment="Center"/>
+                    <TextBlock Text="PANADERÍA LA ESPIGA S.P.M." FontSize="7" Foreground="Black" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Botón fuera del TicketBorder para que no se imprima -->
+        <Button x:Name="BtnCerrar" Content="IMPRIMIR Y CERRAR" Click="Print_Click" Height="40" Margin="10" Background="#111827" Foreground="White" FontWeight="Bold" Cursor="Hand" BorderThickness="0">
+            <Button.Resources>
+                <Style TargetType="Border">
+                    <Setter Property="CornerRadius" Value="8"/>
+                </Style>
+            </Button.Resources>
+        </Button>
+    </StackPanel>
+</Window>
