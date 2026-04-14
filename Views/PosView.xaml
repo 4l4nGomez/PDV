@@ -241,7 +241,7 @@
                                         <Button Command="{Binding DataContext.RequestDiscountCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
                                                 CommandParameter="{Binding}" 
                                                 Background="#F5F3FF" Foreground="{StaticResource PrimaryBrush}" 
-                                                Width="35" Height="35" Margin="0,0,5,0" Padding="0" CornerRadius="17.5"
+                                                Width="35" Height="35" Margin="0,0,5,0" Padding="0"
                                                 BorderThickness="1" BorderBrush="#DDD6FE" ToolTip="Aplicar Descuento">
                                             <TextBlock Text="%" FontSize="16" FontWeight="Bold"/>
                                         </Button>
@@ -249,7 +249,7 @@
                                         <Button Command="{Binding DataContext.RemoveFromCartCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
                                                 CommandParameter="{Binding}" 
                                                 Background="#FFF1F2" Foreground="{StaticResource DangerBrush}" 
-                                                Width="35" Height="35" Padding="0" CornerRadius="17.5"
+                                                Width="35" Height="35" Padding="0"
                                                 BorderThickness="1" BorderBrush="#FECACA" ToolTip="Quitar">
                                             <TextBlock Text="×" FontSize="22" FontWeight="Bold" Margin="0,-2,0,0"/>
                                         </Button>
