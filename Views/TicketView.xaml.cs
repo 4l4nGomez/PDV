@@ -38,6 +38,9 @@ namespace BakeryPOS.Views
                     // Centrar el ticket dentro del contenedor de ancho completo de la página
                     TicketBorder.HorizontalAlignment = HorizontalAlignment.Center;
                     TicketBorder.Margin = new Thickness(0);
+                    
+                    // CRÍTICO: Asignar el DataContext directamente al contenedor de impresión
+                    printContainer.DataContext = this.DataContext; 
                     printContainer.Children.Add(TicketBorder);
 
                     // Forzar actualización de diseño del contenedor

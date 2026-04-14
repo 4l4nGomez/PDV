@@ -32,34 +32,45 @@
                 <TextBlock Text="--------------------------" FontSize="8" HorizontalAlignment="Center" Foreground="Black" Margin="0,5"/>
 
                 <!-- ENCABEZADO ITEMS -->
-                <Grid Margin="0,0,0,5">
+                <Grid Margin="0,5,0,5">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="2*"/>
-                        <ColumnDefinition Width="0.5*"/>
-                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="35"/>
+                        <ColumnDefinition Width="50"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="PRODUCTO" FontSize="7.5" FontWeight="Bold" Foreground="Black"/>
+                    <TextBlock Text="DESCRIPCIÓN" FontSize="7.5" FontWeight="Bold" Foreground="Black"/>
                     <TextBlock Grid.Column="1" Text="CANT" FontSize="7.5" FontWeight="Bold" Foreground="Black" HorizontalAlignment="Center"/>
                     <TextBlock Grid.Column="2" Text="TOTAL" FontSize="7.5" FontWeight="Bold" Foreground="Black" HorizontalAlignment="Right"/>
                 </Grid>
 
-                <!-- LISTA DE PRODUCTOS -->
-                <ItemsControl ItemsSource="{Binding Items}">
-                    <ItemsControl.ItemTemplate>
+                <!-- LISTA DE PRODUCTOS (ListView Simplificado) -->
+                <ListView ItemsSource="{Binding Items}" BorderThickness="0" Background="Transparent" Padding="0">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListViewItem">
+                                        <ContentPresenter />
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.ItemTemplate>
                         <DataTemplate>
                             <Grid Margin="0,2">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="2*"/>
-                                    <ColumnDefinition Width="0.5*"/>
-                                    <ColumnDefinition Width="1*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="35"/>
+                                    <ColumnDefinition Width="50"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="{Binding ProductName}" FontSize="8.5" Foreground="Black" TextWrapping="Wrap" VerticalAlignment="Top"/>
                                 <TextBlock Grid.Column="1" Text="{Binding Quantity}" FontSize="8.5" Foreground="Black" HorizontalAlignment="Center" VerticalAlignment="Top"/>
                                 <TextBlock Grid.Column="2" Text="{Binding SubTotal, StringFormat=C}" FontSize="8.5" FontWeight="Bold" Foreground="Black" HorizontalAlignment="Right" VerticalAlignment="Top"/>
                             </Grid>
                         </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                    </ListView.ItemTemplate>
+                </ListView>
 
                 <!-- TOTAL FINAL -->
                 <TextBlock Text="--------------------------" FontSize="8" HorizontalAlignment="Center" Foreground="Black" Margin="0,10,0,5"/>
