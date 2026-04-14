@@ -156,85 +156,102 @@
                     <RowDefinition Height="Auto"/> <!-- Totales -->
                 </Grid.RowDefinitions>
 
-                <Border Background="{StaticResource BgBrush}" Padding="20" CornerRadius="12,12,0,0">
-                    <TextBlock Text="🛒 Carrito de Compras" FontSize="18" FontWeight="Bold" Foreground="{StaticResource SecondaryBrush}"/>
+                <Border Background="{StaticResource PrimaryBrush}" Padding="15" CornerRadius="12,12,0,0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🛒" FontSize="20" Margin="0,0,10,0"/>
+                        <TextBlock Text="Resumen de Venta" FontSize="18" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                    </StackPanel>
                 </Border>
 
                 <!-- Lista items -->
                 <DataGrid Grid.Row="2" ItemsSource="{Binding CurrentTicket}" AutoGenerateColumns="False" 
                           CanUserAddRows="False" IsReadOnly="True" GridLinesVisibility="None" 
                           BorderThickness="0" Background="Transparent" Margin="5"
-                          RowHeight="50">
+                          RowHeight="60" SelectionUnit="FullRow">
+                    <DataGrid.Resources>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Foreground" Value="{StaticResource TextSecBrush}"/>
+                            <Setter Property="FontWeight" Value="SemiBold"/>
+                            <Setter Property="Padding" Value="10,5"/>
+                            <Setter Property="FontSize" Value="12"/>
+                            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+                        </Style>
+                        <Style TargetType="DataGridRow">
+                            <Style.Triggers>
+                                <Trigger Property="ItemsControl.AlternationIndex" Value="1">
+                                    <Setter Property="Background" Value="#F8FAFC"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.Resources>
+                    <DataGrid.AlternationCount Value="2"/>
+                    
                     <DataGrid.Columns>
-                        <!-- PRODUCTO: Ocupa todo el espacio restante -->
-                        <DataGridTemplateColumn Header="PRODUCTO" Width="*">
+                        <!-- PRODUCTO -->
+                        <DataGridTemplateColumn Header="DETALLE" Width="*">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <StackPanel VerticalAlignment="Center" Margin="5,0">
-                                        <TextBlock Text="{Binding Product.Name}" FontWeight="Bold" FontSize="13" TextWrapping="Wrap"/>
-                                        <TextBlock Text="{Binding UnitPrice, StringFormat=C}" FontSize="11" Foreground="{StaticResource TextSecBrush}"/>
+                                    <StackPanel VerticalAlignment="Center" Margin="10,0">
+                                        <TextBlock Text="{Binding Product.Name}" FontWeight="Bold" FontSize="14" Foreground="{StaticResource SecondaryBrush}"/>
+                                        <TextBlock Text="{Binding UnitPrice, StringFormat='Precio: {0:C}'}" FontSize="11" Foreground="{StaticResource TextSecBrush}"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
                         
-                        <!-- CANTIDAD: Controles de +/- centrados -->
-                        <DataGridTemplateColumn Header="CANT" Width="100">
+                        <!-- CANTIDAD -->
+                        <DataGridTemplateColumn Header="CANTIDAD" Width="110">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                        <Button Command="{Binding DataContext.DecrementQuantityCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                                                CommandParameter="{Binding}" Content="-" Width="28" Height="28" Padding="0" 
-                                                Background="#F1F5F9" Foreground="{StaticResource SecondaryBrush}" BorderThickness="1" BorderBrush="#CBD5E1"/>
-                                        <TextBlock Text="{Binding Quantity}" VerticalAlignment="Center" Margin="10,0" FontWeight="Bold" FontSize="14"/>
-                                        <Button Command="{Binding DataContext.IncrementQuantityCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                                                CommandParameter="{Binding}" Content="+" Width="28" Height="28" Padding="0" 
-                                                Background="#F1F5F9" Foreground="{StaticResource SecondaryBrush}" BorderThickness="1" BorderBrush="#CBD5E1"/>
-                                    </StackPanel>
+                                    <Border Background="White" CornerRadius="15" BorderThickness="1" BorderBrush="#E2E8F0" Height="32" VerticalAlignment="Center" Margin="5,0">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="30"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="30"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Button Command="{Binding DataContext.DecrementQuantityCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                                    CommandParameter="{Binding}" Content="−" Background="Transparent" Foreground="{StaticResource DangerBrush}" FontWeight="Bold" Padding="0"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding Quantity}" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Black" FontSize="14"/>
+                                            <Button Grid.Column="2" Command="{Binding DataContext.IncrementQuantityCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                                    CommandParameter="{Binding}" Content="+" Background="Transparent" Foreground="{StaticResource AccentBrush}" FontWeight="Bold" Padding="0"/>
+                                        </Grid>
+                                    </Border>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <!-- TOTAL: Alineado a la derecha -->
-                        <DataGridTextColumn Header="TOTAL" Binding="{Binding SubTotal, StringFormat=C}" 
-                                            FontWeight="Black" Width="85">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="HorizontalAlignment" Value="Right"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="Margin" Value="0,0,10,0"/>
-                                    <Setter Property="FontSize" Value="14"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-                        
-                        <!-- ACCIONES: %, x -->
-                        <DataGridTemplateColumn Width="110">
+                        <!-- TOTAL -->
+                        <DataGridTemplateColumn Header="SUBTOTAL" Width="90">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                        <!-- Botón de Descuento -->
+                                    <TextBlock Text="{Binding SubTotal, StringFormat=C}" FontWeight="Black" FontSize="15" 
+                                               Foreground="{StaticResource PrimaryBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        
+                        <!-- ACCIONES -->
+                        <DataGridTemplateColumn Width="100">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,5,0">
                                         <Button Command="{Binding DataContext.RequestDiscountCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
                                                 CommandParameter="{Binding}" 
-                                                ToolTip="Aplicar Descuento"
-                                                Background="#EEF2FF" Foreground="{StaticResource PrimaryBrush}" 
-                                                Width="40" Height="40" Margin="0,0,8,0" Padding="0"
-                                                BorderThickness="1" BorderBrush="{StaticResource PrimaryBrush}">
-                                            <TextBlock Text="%" FontSize="20" FontWeight="Bold" 
-                                                       HorizontalAlignment="Center" VerticalAlignment="Center" 
-                                                       TextAlignment="Center"/>
+                                                Background="#F5F3FF" Foreground="{StaticResource PrimaryBrush}" 
+                                                Width="35" Height="35" Margin="0,0,5,0" Padding="0" CornerRadius="17.5"
+                                                BorderThickness="1" BorderBrush="#DDD6FE" ToolTip="Aplicar Descuento">
+                                            <TextBlock Text="%" FontSize="16" FontWeight="Bold"/>
                                         </Button>
                                         
-                                        <!-- Botón de Eliminar -->
                                         <Button Command="{Binding DataContext.RemoveFromCartCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
                                                 CommandParameter="{Binding}" 
-                                                ToolTip="Quitar del carrito"
-                                                Background="#FEF2F2" Foreground="{StaticResource DangerBrush}" 
-                                                Width="40" Height="40" Padding="0"
-                                                BorderThickness="1" BorderBrush="{StaticResource DangerBrush}">
-                                            <TextBlock Text="×" FontSize="26" FontWeight="Bold" 
-                                                       HorizontalAlignment="Center" VerticalAlignment="Center" 
-                                                       TextAlignment="Center" Margin="0,-2,0,0"/>
+                                                Background="#FFF1F2" Foreground="{StaticResource DangerBrush}" 
+                                                Width="35" Height="35" Padding="0" CornerRadius="17.5"
+                                                BorderThickness="1" BorderBrush="#FECACA" ToolTip="Quitar">
+                                            <TextBlock Text="×" FontSize="22" FontWeight="Bold" Margin="0,-2,0,0"/>
                                         </Button>
                                     </StackPanel>
                                 </DataTemplate>
@@ -244,11 +261,14 @@
                 </DataGrid>
 
                 <!-- Totales -->
-                <Border Grid.Row="3" Background="#F1F5F9" Padding="25" CornerRadius="0,0,12,12">
+                <Border Grid.Row="3" Background="#1E293B" Padding="20" CornerRadius="0,0,12,12">
                     <StackPanel>
                         <Grid Margin="0,0,0,15">
-                            <TextBlock Text="TOTAL A PAGAR" FontSize="14" FontWeight="Bold" Foreground="{StaticResource TextSecBrush}" VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding TicketTotal, StringFormat=C}" FontSize="36" FontWeight="Black" Foreground="{StaticResource PrimaryBrush}" HorizontalAlignment="Right"/>
+                            <StackPanel>
+                                <TextBlock Text="TOTAL A PAGAR" FontSize="12" FontWeight="Bold" Foreground="#94A3B8"/>
+                                <TextBlock Text="Incluye impuestos" FontSize="10" Foreground="#64748B"/>
+                            </StackPanel>
+                            <TextBlock Text="{Binding TicketTotal, StringFormat=C}" FontSize="38" FontWeight="Black" Foreground="White" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                         </Grid>
                         
                         <UniformGrid Columns="2" Height="75" Margin="0,5,0,0">
