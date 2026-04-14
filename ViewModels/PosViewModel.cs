@@ -233,6 +233,7 @@ namespace BakeryPOS.ViewModels
 
             // Siempre abrir el diálogo de pago para efectivo
             var checkoutWin = new Views.CheckoutView(this);
+            checkoutWin.Owner = System.Windows.Application.Current.MainWindow;
             if (checkoutWin.ShowDialog() != true) return;
 
             var sale = DoCheckout();
@@ -249,6 +250,7 @@ namespace BakeryPOS.ViewModels
 
             // Siempre abrir el diálogo de pago para efectivo
             var checkoutWin = new Views.CheckoutView(this);
+            checkoutWin.Owner = System.Windows.Application.Current.MainWindow;
             if (checkoutWin.ShowDialog() != true) return;
 
             var sale = DoCheckout();
@@ -372,6 +374,7 @@ namespace BakeryPOS.ViewModels
                 };
 
                 var ticketWin = new Views.TicketView(ticketData);
+                ticketWin.Owner = System.Windows.Application.Current.MainWindow;
                 ticketWin.ShowDialog();
             }
         }
