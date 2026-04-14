@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:models="clr-namespace:BakeryPOS.Models"
         Title="La Espiga de San Pablo" Height="768" Width="1280"
+        WindowState="Maximized"
         WindowStartupLocation="CenterScreen" Background="{StaticResource BgBrush}">
 
     <Window.Resources>
