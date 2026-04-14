@@ -248,8 +248,8 @@ namespace BakeryPOS.ViewModels
         {
             if (!CurrentTicket.Any()) return;
 
-            // Recopilar datos ANTES de cualquier otra acción en una lista nueva e independiente
-            var itemsParaTicket = new List<TicketItemData>();
+            // Recopilar datos ANTES de cualquier otra acción en una colección observable e independiente
+            var itemsParaTicket = new System.Collections.ObjectModel.ObservableCollection<TicketItemData>();
             foreach(var item in CurrentTicket)
             {
                 itemsParaTicket.Add(new TicketItemData

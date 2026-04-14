@@ -7,8 +7,8 @@ namespace BakeryPOS.Views
     {
         public TicketView(object viewModel)
         {
-            InitializeComponent();
             DataContext = viewModel;
+            InitializeComponent();
             this.MouseDown += (s, e) => {
                 if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
                     this.DragMove();
