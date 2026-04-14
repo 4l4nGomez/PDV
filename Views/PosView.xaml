@@ -14,16 +14,16 @@
 
     <Grid Background="{StaticResource BgBrush}">
         <Grid.ColumnDefinitions>
-            <!-- Diseño Responsivo: 60% Productos, 40% Carrito -->
-            <ColumnDefinition Width="6*"/>
-            <ColumnDefinition Width="4*"/>
+            <!-- Productos: Ocupa el resto del espacio -->
+            <ColumnDefinition Width="*"/>
+            <!-- Carrito: Aumentado para dar más espacio a los nombres de productos con letra grande -->
+            <ColumnDefinition Width="0.4*" MinWidth="420" MaxWidth="580"/>
         </Grid.ColumnDefinitions>
 
         <!-- LADO IZQUIERDO: PRODUCTOS -->
         <Grid Grid.Column="0" Margin="25,25,12,25">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/> <!-- Buscador -->
-                <RowDefinition Height="Auto"/> <!-- Categorías -->
                 <RowDefinition Height="*"/>    <!-- Grid de Productos -->
             </Grid.RowDefinitions>
 
@@ -72,45 +72,9 @@
                 </Grid>
             </Border>
 
-            <!-- Categorías -->
-            <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Margin="0,0,0,15">
-                <ItemsControl ItemsSource="{Binding Categories}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <RadioButton Content="{Binding}" 
-                                         GroupName="Cats"
-                                         Padding="15,8" Margin="0,0,10,0"
-                                         Command="{Binding DataContext.SelectCategoryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                         CommandParameter="{Binding}">
-                                <RadioButton.Template>
-                                    <ControlTemplate TargetType="RadioButton">
-                                        <Border x:Name="border" CornerRadius="20" Padding="{TemplateBinding Padding}" 
-                                                Background="White" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsChecked" Value="True">
-                                                <Setter TargetName="border" Property="Background" Value="{StaticResource PrimaryBrush}"/>
-                                                <Setter Property="Foreground" Value="White"/>
-                                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </RadioButton.Template>
-                            </RadioButton>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
-
             <!-- Grid de Productos -->
-            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
-                <ItemsControl ItemsSource="{Binding FilteredProducts}">
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Focusable="False">
+                <ItemsControl ItemsSource="{Binding FilteredProducts}" Focusable="False">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <WrapPanel />
@@ -195,8 +159,8 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel VerticalAlignment="Center" Margin="5,0">
-                                        <TextBlock Text="{Binding Product.Name}" FontWeight="Bold" FontSize="13" Foreground="{StaticResource SecondaryBrush}" TextWrapping="Wrap"/>
-                                        <TextBlock Text="{Binding UnitPrice, StringFormat=C}" FontSize="10" Foreground="{StaticResource TextSecBrush}"/>
+                                        <TextBlock Text="{Binding Product.Name}" FontWeight="Bold" FontSize="16" Foreground="{StaticResource SecondaryBrush}" TextWrapping="Wrap"/>
+                                        <TextBlock Text="{Binding UnitPrice, StringFormat=C}" FontSize="12" Foreground="{StaticResource TextSecBrush}"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>

@@ -21,12 +21,6 @@ namespace BakeryPOS.ViewModels
         private ObservableCollection<Product> _filteredProducts;
 
         [ObservableProperty]
-        private ObservableCollection<string> _categories;
-
-        [ObservableProperty]
-        private string _selectedCategory = "Todos";
-
-        [ObservableProperty]
         private ObservableCollection<SaleItem> _currentTicket;
 
         [ObservableProperty]
@@ -67,33 +61,12 @@ namespace BakeryPOS.ViewModels
         private void LoadData()
         {
             _allAvailableProducts = _context.Products.Where(p => p.Stock > 0).ToList();
-            
-            var cats = _allAvailableProducts
-                .Select(p => p.Category)
-                .Where(c => !string.IsNullOrEmpty(c))
-                .Distinct()
-                .OrderBy(c => c)
-                .ToList();
-            
-            cats.Insert(0, "Todos");
-            Categories = new ObservableCollection<string>(cats);
-            
             FilterProducts();
         }
 
         partial void OnSearchTextChanged(string value)
         {
             FilterProducts();
-        }
-
-        partial void OnSelectedCategoryChanged(string value)
-        {
-            FilterProducts();
-        }
-
-        partial void OnCashReceivedTextChanged(string value)
-        {
-            RecalculateChange();
         }
 
         private void RecalculateChange()
@@ -105,11 +78,6 @@ namespace BakeryPOS.ViewModels
         {
             var query = _allAvailableProducts.AsEnumerable();
 
-            if (SelectedCategory != "Todos")
-            {
-                query = query.Where(p => p.Category == SelectedCategory);
-            }
-
             if (!string.IsNullOrWhiteSpace(SearchText))
             {
                 var lower = SearchText.ToLower();
@@ -117,12 +85,6 @@ namespace BakeryPOS.ViewModels
             }
 
             FilteredProducts = new ObservableCollection<Product>(query.OrderBy(p => p.Name));
-        }
-
-        [RelayCommand]
-        private void SelectCategory(string category)
-        {
-            SelectedCategory = category;
         }
 
         [RelayCommand]
