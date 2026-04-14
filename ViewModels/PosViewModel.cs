@@ -248,14 +248,18 @@ namespace BakeryPOS.ViewModels
         {
             if (!CurrentTicket.Any()) return;
 
-            // Guardar copia de los datos para el ticket ANTES de limpiar el carrito en DoCheckout
-            var itemsParaTicket = CurrentTicket.Select(i => new TicketItemData
+            // Recopilar datos ANTES de cualquier otra acción en una lista nueva e independiente
+            var itemsParaTicket = new List<TicketItemData>();
+            foreach(var item in CurrentTicket)
             {
-                ProductName = i.Product.Name,
-                Quantity = i.Quantity,
-                UnitPrice = i.UnitPrice - i.Discount,
-                SubTotal = i.SubTotal
-            }).ToList();
+                itemsParaTicket.Add(new TicketItemData
+                {
+                    ProductName = item.Product?.Name ?? "Producto",
+                    Quantity = item.Quantity,
+                    UnitPrice = item.UnitPrice - item.Discount,
+                    SubTotal = item.SubTotal
+                });
+            }
             
             var totalVenta = TicketTotal;
 
@@ -267,7 +271,20 @@ namespace BakeryPOS.ViewModels
             var sale = DoCheckout();
             if (sale != null) 
             {
-                PrintTicket(sale, itemsParaTicket, totalVenta);
+                // Crear el objeto de datos del ticket explícitamente
+                var ticketData = new TicketData
+                {
+                    SaleDate = sale.SaleDate,
+                    CashierName = AppSession.CurrentUser?.Username ?? "Cajero",
+                    PaymentMethod = sale.PaymentMethod,
+                    TotalAmount = totalVenta,
+                    Items = itemsParaTicket
+                };
+
+                var ticketWin = new Views.TicketView(ticketData);
+                ticketWin.Owner = System.Windows.Application.Current.MainWindow;
+                ticketWin.ShowDialog();
+                
                 LoadData(); 
             }
         }
@@ -360,22 +377,6 @@ namespace BakeryPOS.ViewModels
             {
                 System.Windows.MessageBox.Show("PIN de Administrador incorrecto.", "Acceso Denegado", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
-        }
-
-        private void PrintTicket(Sale sale, List<TicketItemData> items, decimal total)
-        {
-            var ticketData = new TicketData
-            {
-                SaleDate = sale.SaleDate,
-                CashierName = AppSession.CurrentUser?.Username,
-                PaymentMethod = sale.PaymentMethod,
-                TotalAmount = total,
-                Items = items
-            };
-
-            var ticketWin = new Views.TicketView(ticketData);
-            ticketWin.Owner = System.Windows.Application.Current.MainWindow;
-            ticketWin.ShowDialog();
         }
     }
 }
