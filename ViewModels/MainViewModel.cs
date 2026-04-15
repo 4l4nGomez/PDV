@@ -27,6 +27,7 @@ namespace BakeryPOS.ViewModels
 
         private System.Windows.Threading.DispatcherTimer _timer;
         private System.Windows.Threading.DispatcherTimer _shiftMonitorTimer;
+        private PosViewModel _posViewModel;
 
         public bool IsAdmin => AppSession.IsAdmin;
         public bool IsCashier => AppSession.IsCashier;
@@ -102,6 +103,7 @@ namespace BakeryPOS.ViewModels
         {
             IsLoggedIn = false;
             HasActiveShift = false;
+            _posViewModel = null; // Limpiar estado del POS al ir al login
             CurrentSection = "Ingreso";
             WindowTitle = "Bakery POS - Iniciar Sesión";
             var loginVm = new LoginViewModel();
@@ -132,6 +134,7 @@ namespace BakeryPOS.ViewModels
         private void Logout()
         {
             AppSession.CurrentUser = null;
+            _posViewModel = null; // Limpiar carrito al cerrar sesión
             ShowLogin();
         }
 
@@ -157,7 +160,14 @@ namespace BakeryPOS.ViewModels
         private void NavigateToPos()
         {
             if (!CheckShift()) return;
-            CurrentView = new PosViewModel();
+            
+            // Reutilizar la instancia si ya existe para conservar el carrito
+            if (_posViewModel == null)
+            {
+                _posViewModel = new PosViewModel();
+            }
+
+            CurrentView = _posViewModel;
             CurrentSection = "Punto de Venta";
             WindowTitle = "Bakery POS - Punto de Venta";
         }

@@ -4,8 +4,13 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:BakeryPOS.Views"
+             xmlns:root="clr-namespace:BakeryPOS"
              mc:Ignorable="d" d:DesignHeight="700" d:DesignWidth="1100">
     
+    <UserControl.Resources>
+        <root:EqualityToVisibilityConverter x:Key="EqualityToVisibilityConverter"/>
+    </UserControl.Resources>
+
     <UserControl.InputBindings>
         <KeyBinding Key="F1" Command="{Binding CheckoutAndPrintCommand}"/>
         <KeyBinding Key="F2" Command="{Binding CheckoutCommand}"/>
@@ -129,11 +134,19 @@
                     </StackPanel>
                 </Border>
 
-                <!-- Detalle de Venta -->
+                <!-- Detalle de Venta Pro (Botones y teclado siempre visibles) -->
                 <DataGrid Grid.Row="1" ItemsSource="{Binding CurrentTicket}" AutoGenerateColumns="False" 
                           CanUserAddRows="False" IsReadOnly="True" GridLinesVisibility="None" 
                           BorderThickness="0" Background="Transparent" Margin="5"
-                          RowHeight="65" AlternationCount="2">
+                          SelectionUnit="FullRow" SelectionMode="Single"
+                          SelectedItem="{Binding SelectedTicketItem}"
+                          AlternationCount="2" VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+                    <DataGrid.InputBindings>
+                        <KeyBinding Key="Delete" Command="{Binding RemoveSelectedCommand}"/>
+                        <KeyBinding Key="Add" Command="{Binding IncrementSelectedCommand}"/>
+                        <KeyBinding Key="Subtract" Command="{Binding DecrementSelectedCommand}"/>
+                    </DataGrid.InputBindings>
                     <DataGrid.Resources>
                         <Style TargetType="DataGridColumnHeader">
                             <Setter Property="Background" Value="Transparent"/>
@@ -161,8 +174,20 @@
                                     <StackPanel VerticalAlignment="Center" Margin="5,5,10,5">
                                         <TextBlock Text="{Binding Product.Name}" FontWeight="Bold" FontSize="15" 
                                                  Foreground="{StaticResource SecondaryBrush}" TextWrapping="Wrap"/>
-                                        <TextBlock Text="{Binding UnitPrice, StringFormat=C}" FontSize="11" 
-                                                 Foreground="{StaticResource TextSecBrush}"/>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding UnitPrice, StringFormat=C}" FontSize="11" 
+                                                     Foreground="{StaticResource TextSecBrush}"/>
+                                            
+                                            <!-- Etiqueta de Descuento (Visible solo si hay descuento) -->
+                                            <Border Background="#FFF7ED" BorderBrush="#FED7AA" BorderThickness="1" 
+                                                    CornerRadius="4" Padding="4,1" Margin="8,0,0,0"
+                                                    Visibility="{Binding Discount, Converter={StaticResource EqualityToVisibilityConverter}, ConverterParameter=!0}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="↓ -" FontSize="10" FontWeight="Bold" Foreground="#EA580C" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="{Binding Discount, StringFormat=C}" FontSize="10" FontWeight="Bold" Foreground="#EA580C" VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </Border>
+                                        </StackPanel>
                                     </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
@@ -198,17 +223,29 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
                         
-                        <!-- ACCIÓN: Siempre a la derecha -->
-                        <DataGridTemplateColumn Width="45">
+                        <!-- ACCIONES: Descuento y Eliminar -->
+                        <DataGridTemplateColumn Header="ACC" Width="85">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Button Command="{Binding DataContext.RemoveFromCartCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                                            CommandParameter="{Binding}" 
-                                            Background="#FFF1F2" Foreground="{StaticResource DangerBrush}" 
-                                            Width="32" Height="32" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                            BorderThickness="1" BorderBrush="#FECACA" Padding="0">
-                                        <TextBlock Text="×" FontSize="20" FontWeight="Bold" Margin="0,-3,0,0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Button>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,5,0">
+                                        <!-- Botón de Descuento (%) -->
+                                        <Button Command="{Binding DataContext.RequestDiscountCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                                CommandParameter="{Binding}" 
+                                                Background="#EEF2FF" Foreground="{StaticResource PrimaryBrush}" 
+                                                Width="32" Height="32" Margin="0,0,5,0" Padding="0"
+                                                BorderThickness="1" BorderBrush="#C7D2FE">
+                                            <TextBlock Text="%" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Button>
+                                        
+                                        <!-- Botón de Eliminar (X) -->
+                                        <Button Command="{Binding DataContext.RemoveFromCartCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                                CommandParameter="{Binding}" 
+                                                Background="#FFF1F2" Foreground="{StaticResource DangerBrush}" 
+                                                Width="32" Height="32" Padding="0"
+                                                BorderThickness="1" BorderBrush="#FECACA">
+                                            <TextBlock Text="×" FontSize="20" FontWeight="Bold" Margin="0,-3,0,0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Button>
+                                    </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>

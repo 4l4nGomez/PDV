@@ -41,6 +41,9 @@ namespace BakeryPOS.ViewModels
         [ObservableProperty]
         private decimal _proposedPrice;
 
+        [ObservableProperty]
+        private SaleItem _selectedTicketItem;
+
         public decimal CashReceivedNum
         {
             get
@@ -56,6 +59,33 @@ namespace BakeryPOS.ViewModels
             _context = new AppDbContext();
             CurrentTicket = new ObservableCollection<SaleItem>();
             LoadData();
+        }
+
+        [RelayCommand]
+        private void RemoveSelected()
+        {
+            if (SelectedTicketItem != null)
+            {
+                RemoveFromCart(SelectedTicketItem);
+            }
+        }
+
+        [RelayCommand]
+        private void IncrementSelected()
+        {
+            if (SelectedTicketItem != null)
+            {
+                IncrementQuantity(SelectedTicketItem);
+            }
+        }
+
+        [RelayCommand]
+        private void DecrementSelected()
+        {
+            if (SelectedTicketItem != null)
+            {
+                DecrementQuantity(SelectedTicketItem);
+            }
         }
 
         private void LoadData()
