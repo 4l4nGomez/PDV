@@ -41,6 +41,26 @@ namespace BakeryPOS.ViewModels
             StartShiftMonitor();
         }
 
+        // Comandos globales que delegan en el PosViewModel para mantener atajos funcionales
+        [CommunityToolkit.Mvvm.Input.RelayCommand]
+        private void FocusPosSearch()
+        {
+            if (_posViewModel != null)
+            {
+                // Execute the generated ICommand on the PosViewModel if available
+                _posViewModel.FocusSearchCommand?.Execute(null);
+            }
+        }
+
+        [CommunityToolkit.Mvvm.Input.RelayCommand]
+        private void FocusPosCart()
+        {
+            if (_posViewModel != null)
+            {
+                _posViewModel.FocusCartCommand?.Execute(null);
+            }
+        }
+
         private void StartShiftMonitor()
         {
             _shiftMonitorTimer = new System.Windows.Threading.DispatcherTimer

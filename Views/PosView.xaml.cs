@@ -20,17 +20,71 @@ namespace BakeryPOS.Views
                             {
                                 TicketDataGrid.SelectedIndex = 0;
                             }
-                            
-                            TicketDataGrid.Focus();
 
-                            // Forzar el foco del teclado directamente a la fila para control total
+                            var selected = TicketDataGrid.SelectedItem;
+
+                            // Asegurar que el ítem esté visible
+                            TicketDataGrid.ScrollIntoView(selected);
+
+                            // Dar foco al DataGrid primero
+                            TicketDataGrid.Focus();
+                            System.Windows.Input.Keyboard.Focus(TicketDataGrid);
+
+                            // Luego intentar enfocar la celda/ fila concreta de forma robusta
                             System.Windows.Application.Current.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new System.Action(() => {
-                                var row = TicketDataGrid.ItemContainerGenerator.ContainerFromItem(TicketDataGrid.SelectedItem) as DataGridRow;
-                                if (row != null)
+                                try
                                 {
-                                    row.Focus();
-                                    System.Windows.Input.Keyboard.Focus(row);
+                                    // Reestablecer CurrentCell a la primera columna para navegación con flechas
+                                    if (TicketDataGrid.Columns.Count > 0)
+                                    {
+                                        TicketDataGrid.CurrentCell = new System.Windows.Controls.DataGridCellInfo(selected, TicketDataGrid.Columns[0]);
+                                    }
+
+                                    // Forzar actualización y asegurar el contenedor de item existe
+                                    TicketDataGrid.UpdateLayout();
+                                    TicketDataGrid.ScrollIntoView(selected, TicketDataGrid.Columns.Count > 0 ? TicketDataGrid.Columns[0] : null);
+
+                                    var row = TicketDataGrid.ItemContainerGenerator.ContainerFromItem(selected) as System.Windows.Controls.DataGridRow;
+                                    if (row == null)
+                                    {
+                                        // Intentar volver a generar el contenedor
+                                        TicketDataGrid.UpdateLayout();
+                                        row = TicketDataGrid.ItemContainerGenerator.ContainerFromItem(selected) as System.Windows.Controls.DataGridRow;
+                                    }
+
+                                    if (row != null)
+                                    {
+                                        row.IsSelected = true;
+
+                                        // Intentar enfocar la primera celda
+                                        if (TicketDataGrid.Columns.Count > 0)
+                                        {
+                                            var cellInfo = new System.Windows.Controls.DataGridCellInfo(selected, TicketDataGrid.Columns[0]);
+                                            TicketDataGrid.CurrentCell = cellInfo;
+
+                                            // Try to get the actual DataGridCell and focus it
+                                            var cellContent = TicketDataGrid.Columns[0].GetCellContent(row);
+                                            if (cellContent != null)
+                                            {
+                                                var parent = System.Windows.Media.VisualTreeHelper.GetParent(cellContent);
+                                                while (parent != null && !(parent is System.Windows.Controls.DataGridCell))
+                                                    parent = System.Windows.Media.VisualTreeHelper.GetParent(parent);
+
+                                                if (parent is System.Windows.Controls.DataGridCell dataGridCell)
+                                                {
+                                                    dataGridCell.Focus();
+                                                    System.Windows.Input.Keyboard.Focus(dataGridCell);
+                                                    return;
+                                                }
+                                            }
+                                        }
+
+                                        // Fallback: enfocar la fila
+                                        row.Focus();
+                                        System.Windows.Input.Keyboard.Focus(row);
+                                    }
                                 }
+                                catch { /* no bloquear por errores de foco */ }
                             }));
                         }
                     };

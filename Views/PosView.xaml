@@ -168,6 +168,7 @@
                           AlternationCount="2" VerticalScrollBarVisibility="Auto"
                           HorizontalScrollBarVisibility="Disabled"
                           FocusVisualStyle="{x:Null}"
+                          IsTabStop="False"
                           KeyboardNavigation.TabNavigation="None">
                     <DataGrid.Resources>
                         <Style TargetType="DataGridColumnHeader">
@@ -180,9 +181,15 @@
                             <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
                         </Style>
                         <Style TargetType="DataGridRow">
+                            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
                             <Style.Triggers>
                                 <Trigger Property="ItemsControl.AlternationIndex" Value="1">
                                     <Setter Property="Background" Value="#F8FAFC"/>
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="#F1F5F9"/>
+                                    <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
                                 </Trigger>
                             </Style.Triggers>
                         </Style>

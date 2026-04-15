@@ -227,6 +227,9 @@ namespace BakeryPOS.ViewModels
             
             CurrentTicket.Remove(item);
             RecalculateTotal();
+
+            // Pedir que la vista vuelva a enfocar el carrito para mantener atajos y navegación
+            RequestCartFocus?.Invoke();
         }
 
         private void RecalculateTotal()
