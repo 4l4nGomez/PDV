@@ -5,7 +5,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:BakeryPOS.Views"
              xmlns:root="clr-namespace:BakeryPOS"
-             mc:Ignorable="d" d:DesignHeight="700" d:DesignWidth="1100">
+             mc:Ignorable="d" d:DesignHeight="700" d:DesignWidth="1100"
+             Focusable="False">
     
     <UserControl.Resources>
         <root:EqualityToVisibilityConverter x:Key="EqualityToVisibilityConverter"/>
@@ -15,25 +16,30 @@
         <KeyBinding Key="F1" Command="{Binding CheckoutAndPrintCommand}"/>
         <KeyBinding Key="F2" Command="{Binding CheckoutCommand}"/>
         <KeyBinding Key="F3" Command="{Binding FocusSearchCommand}"/>
+        <KeyBinding Key="F4" Command="{Binding FocusCartCommand}"/>
+        <!-- Atajos Globales para el Carrito -->
+        <KeyBinding Key="Delete" Command="{Binding RemoveSelectedCommand}"/>
+        <KeyBinding Key="Add" Command="{Binding IncrementSelectedCommand}"/>
+        <KeyBinding Key="Subtract" Command="{Binding DecrementSelectedCommand}"/>
     </UserControl.InputBindings>
 
-    <Grid Background="{StaticResource BgBrush}">
+    <Grid Background="{StaticResource BgBrush}" Focusable="False">
         <Grid.ColumnDefinitions>
-            <!-- ÁREA DE PRODUCTOS: Flexible (*) -->
-            <ColumnDefinition Width="1.6*"/>
-            <!-- CARRITO: Proporcional con límites profesionales -->
-            <ColumnDefinition Width="1*" MinWidth="420" MaxWidth="650"/>
+            <!-- Lado de Productos: 60% del ancho total -->
+            <ColumnDefinition Width="60*"/>
+            <!-- Lado del Carrito: 40% del ancho total, con límites para legibilidad -->
+            <ColumnDefinition Width="40*" MinWidth="400" MaxWidth="650"/>
         </Grid.ColumnDefinitions>
 
-        <!-- LADO IZQUIERDO: CATÁLOGO -->
-        <Grid Grid.Column="0" Margin="10,25,20,10">
+        <!-- LADO IZQUIERDO: PRODUCTOS -->
+        <Grid Grid.Column="0" Margin="25,25,12,25" Focusable="False">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/> <!-- Buscador -->
-                <RowDefinition Height="*"/>    <!-- Productos -->
+                <RowDefinition Height="*"/>    <!-- Grid de Productos -->
             </Grid.RowDefinitions>
 
-            <!-- Buscador Estilo Comercial (Ancho Completo) -->
-            <Border Grid.Row="0" Style="{StaticResource ModernCard}" Padding="20" Margin="0,0,40,20">
+            <!-- Buscador Estilo Comercial -->
+            <Border Grid.Row="0" Style="{StaticResource ModernCard}" Padding="15" Margin="0,0,0,20">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -73,18 +79,18 @@
                 </Grid>
             </Border>
 
-            <!-- Catálogo de Productos Flexible -->
+            <!-- Grid de Productos -->
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Focusable="False">
                 <ItemsControl ItemsSource="{Binding FilteredProducts}" Focusable="False">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <WrapPanel HorizontalAlignment="Left" />
+                            <WrapPanel />
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Button Command="{Binding DataContext.AddToCartCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                                    CommandParameter="{Binding}" Background="Transparent" Padding="0" Margin="0,0,10,15">
+                                    CommandParameter="{Binding}" Background="Transparent" Padding="0" Margin="0,0,15,15" Focusable="False">
                                 <Button.Template>
                                     <ControlTemplate TargetType="Button">
                                         <Border x:Name="card" Style="{StaticResource ModernCard}" Padding="12" Width="175" Height="135">
@@ -118,42 +124,58 @@
             </ScrollViewer>
         </Grid>
 
-        <!-- LADO DERECHO: RESUMEN DE VENTA (CARRITO) -->
-        <Border Grid.Column="1" Style="{StaticResource ModernCard}" Margin="0,25,25,25" Padding="0" Background="White">
-            <Grid>
+        <!-- LADO DERECHO: RESUMEN DE VENTA (CARRITO) - BLINDAJE DE FOCO APLICADO -->
+        <Border Grid.Column="1" Style="{StaticResource ModernCard}" Margin="0,25,25,25" Padding="0" Background="White" Focusable="False">
+            <Grid Focusable="False">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/> <!-- Cabecera -->
                     <RowDefinition Height="*"/>    <!-- Lista -->
                     <RowDefinition Height="Auto"/> <!-- Pie con Totales -->
                 </Grid.RowDefinitions>
 
-                <Border Background="{StaticResource PrimaryBrush}" Padding="15" CornerRadius="12,12,0,0">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="🛒" FontSize="20" Margin="0,0,10,0"/>
-                        <TextBlock Text="Resumen de Venta" FontSize="18" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
-                    </StackPanel>
+                <Border Background="{StaticResource PrimaryBrush}" Padding="15" CornerRadius="12,12,0,0" Focusable="False">
+                    <Grid Focusable="False">
+                        <StackPanel Orientation="Horizontal" Focusable="False">
+                            <TextBlock Text="🛒" FontSize="20" Margin="0,0,10,0"/>
+                            <TextBlock Text="Resumen de Venta" FontSize="18" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        
+                        <!-- Botón CANCELAR VENTA -->
+                        <Button HorizontalAlignment="Right" VerticalAlignment="Center" 
+                                Command="{Binding ClearCartCommand}" 
+                                Background="#EF4444" BorderThickness="0" Padding="12,5"
+                                Cursor="Hand" Focusable="False">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="15">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="🗑️" FontSize="14" Margin="0,0,5,0" Foreground="White" VerticalAlignment="Center"/>
+                                            <TextBlock Text="CANCELAR VENTA" FontSize="10" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </Grid>
                 </Border>
 
-                <!-- Detalle de Venta Pro (Botones y teclado siempre visibles) -->
-                <DataGrid Grid.Row="1" ItemsSource="{Binding CurrentTicket}" AutoGenerateColumns="False" 
+                <!-- Detalle de Venta Pro con Foco Restringido a Filas -->
+                <DataGrid Grid.Row="1" x:Name="TicketDataGrid" ItemsSource="{Binding CurrentTicket}" AutoGenerateColumns="False" 
                           CanUserAddRows="False" IsReadOnly="True" GridLinesVisibility="None" 
                           BorderThickness="0" Background="Transparent" Margin="5"
                           SelectionUnit="FullRow" SelectionMode="Single"
                           SelectedItem="{Binding SelectedTicketItem}"
                           AlternationCount="2" VerticalScrollBarVisibility="Auto"
-                          HorizontalScrollBarVisibility="Disabled">
-                    <DataGrid.InputBindings>
-                        <KeyBinding Key="Delete" Command="{Binding RemoveSelectedCommand}"/>
-                        <KeyBinding Key="Add" Command="{Binding IncrementSelectedCommand}"/>
-                        <KeyBinding Key="Subtract" Command="{Binding DecrementSelectedCommand}"/>
-                    </DataGrid.InputBindings>
+                          HorizontalScrollBarVisibility="Disabled"
+                          FocusVisualStyle="{x:Null}"
+                          KeyboardNavigation.TabNavigation="None">
                     <DataGrid.Resources>
                         <Style TargetType="DataGridColumnHeader">
                             <Setter Property="Background" Value="Transparent"/>
                             <Setter Property="Foreground" Value="{StaticResource TextSecBrush}"/>
                             <Setter Property="FontWeight" Value="SemiBold"/>
-                            <Setter Property="Padding" Value="10,5"/>
-                            <Setter Property="FontSize" Value="12"/>
+                            <Setter Property="Padding" Value="5,8"/>
+                            <Setter Property="FontSize" Value="11"/>
                             <Setter Property="BorderThickness" Value="0,0,0,1"/>
                             <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
                         </Style>
@@ -167,7 +189,6 @@
                     </DataGrid.Resources>
                     
                     <DataGrid.Columns>
-                        <!-- DETALLE: Se ajusta al espacio restante -->
                         <DataGridTemplateColumn Header="PRODUCTO" Width="*">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
@@ -177,8 +198,6 @@
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="{Binding UnitPrice, StringFormat=C}" FontSize="11" 
                                                      Foreground="{StaticResource TextSecBrush}"/>
-                                            
-                                            <!-- Etiqueta de Descuento (Visible solo si hay descuento) -->
                                             <Border Background="#FFF7ED" BorderBrush="#FED7AA" BorderThickness="1" 
                                                     CornerRadius="4" Padding="4,1" Margin="8,0,0,0"
                                                     Visibility="{Binding Discount, Converter={StaticResource EqualityToVisibilityConverter}, ConverterParameter=!0}">
@@ -193,7 +212,6 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
                         
-                        <!-- CANTIDAD: Compacta y segura -->
                         <DataGridTemplateColumn Header="CANT" Width="70">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
@@ -204,16 +222,17 @@
                                             <ColumnDefinition Width="22"/>
                                         </Grid.ColumnDefinitions>
                                         <Button Command="{Binding DataContext.DecrementQuantityCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                                                CommandParameter="{Binding}" Content="−" Background="#F1F5F9" Foreground="{StaticResource DangerBrush}" BorderThickness="0" Height="22" Padding="0"/>
+                                                CommandParameter="{Binding}" Content="−" Background="#F1F5F9" Foreground="{StaticResource DangerBrush}" 
+                                                BorderThickness="0" Height="22" Padding="0" Focusable="False"/>
                                         <TextBlock Grid.Column="1" Text="{Binding Quantity}" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Black" FontSize="13"/>
                                         <Button Grid.Column="2" Command="{Binding DataContext.IncrementQuantityCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                                                CommandParameter="{Binding}" Content="+" Background="#F1F5F9" Foreground="{StaticResource AccentBrush}" BorderThickness="0" Height="22" Padding="0"/>
+                                                CommandParameter="{Binding}" Content="+" Background="#F1F5F9" Foreground="{StaticResource AccentBrush}" 
+                                                BorderThickness="0" Height="22" Padding="0" Focusable="False"/>
                                     </Grid>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <!-- SUBTOTAL: Visible -->
                         <DataGridTemplateColumn Header="TOTAL" Width="85">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
@@ -223,26 +242,22 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
                         
-                        <!-- ACCIONES: Descuento y Eliminar -->
                         <DataGridTemplateColumn Header="ACC" Width="85">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,5,0">
-                                        <!-- Botón de Descuento (%) -->
                                         <Button Command="{Binding DataContext.RequestDiscountCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
                                                 CommandParameter="{Binding}" 
                                                 Background="#EEF2FF" Foreground="{StaticResource PrimaryBrush}" 
                                                 Width="32" Height="32" Margin="0,0,5,0" Padding="0"
-                                                BorderThickness="1" BorderBrush="#C7D2FE">
+                                                BorderThickness="1" BorderBrush="#C7D2FE" Focusable="False">
                                             <TextBlock Text="%" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                         </Button>
-                                        
-                                        <!-- Botón de Eliminar (X) -->
                                         <Button Command="{Binding DataContext.RemoveFromCartCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
                                                 CommandParameter="{Binding}" 
                                                 Background="#FFF1F2" Foreground="{StaticResource DangerBrush}" 
                                                 Width="32" Height="32" Padding="0"
-                                                BorderThickness="1" BorderBrush="#FECACA">
+                                                BorderThickness="1" BorderBrush="#FECACA" Focusable="False">
                                             <TextBlock Text="×" FontSize="20" FontWeight="Bold" Margin="0,-3,0,0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                         </Button>
                                     </StackPanel>
@@ -252,35 +267,30 @@
                     </DataGrid.Columns>
                 </DataGrid>
 
-                <!-- Pie de Carrito con Totales y Cobro Optimizado -->
-                <Border Grid.Row="2" Background="#1E293B" Padding="20,15" CornerRadius="0,0,12,12">
-                    <StackPanel>
-                        <Grid Margin="0,0,0,15">
+                <!-- Pie de Carrito con Totales - Blindado -->
+                <Border Grid.Row="2" Background="#1E293B" Padding="20,15" CornerRadius="0,0,12,12" Focusable="False">
+                    <StackPanel Focusable="False">
+                        <Grid Margin="0,0,0,15" Focusable="False">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <StackPanel VerticalAlignment="Center">
+                            <StackPanel VerticalAlignment="Center" Focusable="False">
                                 <TextBlock Text="TOTAL A PAGAR" FontSize="13" FontWeight="Bold" Foreground="#94A3B8"/>
                                 <TextBlock Text="Sujeto a descuentos" FontSize="11" Foreground="#64748B" Margin="0,2,0,0"/>
                             </StackPanel>
                             <TextBlock Grid.Column="1" Text="{Binding TicketTotal, StringFormat=C}" FontSize="38" FontWeight="Black" Foreground="White" VerticalAlignment="Center"/>
                         </Grid>
                         
-                        <UniformGrid Columns="2" Height="75">
-                            <!-- Botón SOLO COBRAR con color Secundario forzado -->
-                            <Button Command="{Binding CheckoutCommand}" 
-                                    Background="#475569" BorderThickness="0" Margin="0,0,6,0">
-                                <StackPanel>
+                        <UniformGrid Columns="2" Height="75" Focusable="False">
+                            <Button Command="{Binding CheckoutCommand}" Background="#475569" BorderThickness="0" Margin="0,0,6,0" Focusable="False">
+                                <StackPanel Focusable="False">
                                     <TextBlock Text="SOLO COBRAR" FontSize="14" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
                                     <TextBlock Text="[F2]" FontSize="12" Foreground="White" Opacity="0.7" HorizontalAlignment="Center" Margin="0,2,0,0"/>
                                 </StackPanel>
                             </Button>
-                            
-                            <!-- Botón COBRAR+TICKET con color de Acento -->
-                            <Button Command="{Binding CheckoutAndPrintCommand}" 
-                                    Background="{StaticResource AccentBrush}" BorderThickness="0" Margin="6,0,0,0">
-                                <StackPanel>
+                            <Button Command="{Binding CheckoutAndPrintCommand}" Background="{StaticResource AccentBrush}" BorderThickness="0" Margin="6,0,0,0" Focusable="False">
+                                <StackPanel Focusable="False">
                                     <TextBlock Text="COBRAR + TICKET" FontSize="14" FontWeight="Black" Foreground="White" HorizontalAlignment="Center"/>
                                     <TextBlock Text="[F1]" FontSize="12" Foreground="White" Opacity="0.8" HorizontalAlignment="Center" Margin="0,2,0,0"/>
                                 </StackPanel>
@@ -291,19 +301,16 @@
             </Grid>
         </Border>
 
-        <!-- DIALOGO DE DESCUENTO (OVERLAY) -->
+        <!-- DIALOGO DE DESCUENTO -->
         <Border Grid.ColumnSpan="2" Background="#CC000000" Panel.ZIndex="100"
                 Visibility="{Binding IsDiscountDialogVisible, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue=Collapsed}">
             <Border Style="{StaticResource ModernCard}" Width="380" VerticalAlignment="Center" Padding="35" HorizontalAlignment="Center">
                 <StackPanel>
                     <TextBlock Text="🏷️ Aplicar Descuento" FontSize="24" FontWeight="Bold" Margin="0,0,0,25" HorizontalAlignment="Center"/>
-                    
                     <TextBlock Text="Precio Unitario Personalizado:" FontWeight="SemiBold" Margin="0,0,0,8"/>
                     <TextBox Text="{Binding ProposedPrice, UpdateSourceTrigger=PropertyChanged}" FontSize="22" Padding="12" Margin="0,0,0,20"/>
-
                     <TextBlock Text="PIN de Administrador:" FontWeight="SemiBold" Margin="0,0,0,8"/>
                     <PasswordBox x:Name="AdminPinBox" Height="50" FontSize="22" Margin="0,0,0,30"/>
-
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition/>

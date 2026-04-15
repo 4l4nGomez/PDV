@@ -16,6 +16,7 @@ namespace BakeryPOS.ViewModels
         private SaleItem _itemToDiscount;
 
         public event Action RequestSearchFocus;
+        public event Action RequestCartFocus;
 
         [ObservableProperty]
         private ObservableCollection<Product> _filteredProducts;
@@ -66,7 +67,21 @@ namespace BakeryPOS.ViewModels
         {
             if (SelectedTicketItem != null)
             {
+                int index = CurrentTicket.IndexOf(SelectedTicketItem);
                 RemoveFromCart(SelectedTicketItem);
+
+                // Si quedan items, seleccionar el más cercano a la posición anterior y reenfocar (F4)
+                if (CurrentTicket.Any())
+                {
+                    int nextIndex = Math.Min(index, CurrentTicket.Count - 1);
+                    SelectedTicketItem = CurrentTicket[nextIndex];
+                    RequestCartFocus?.Invoke();
+                }
+                else
+                {
+                    // Si el carrito quedó vacío, regresar al buscador (F3)
+                    RequestSearchFocus?.Invoke();
+                }
             }
         }
 
@@ -85,6 +100,31 @@ namespace BakeryPOS.ViewModels
             if (SelectedTicketItem != null)
             {
                 DecrementQuantity(SelectedTicketItem);
+            }
+        }
+
+        [RelayCommand]
+        private void ClearCart()
+        {
+            if (!CurrentTicket.Any()) return;
+
+            var result = System.Windows.MessageBox.Show("¿Estás seguro de que deseas CANCELAR la venta actual? Esto borrará todos los productos del carrito.", "Confirmar Cancelación", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Warning);
+            
+            if (result == System.Windows.MessageBoxResult.Yes)
+            {
+                // Restaurar stock de cada producto antes de borrar
+                foreach (var item in CurrentTicket)
+                {
+                    var product = _allAvailableProducts.FirstOrDefault(p => p.Id == item.ProductId);
+                    if (product != null)
+                    {
+                        product.Stock += item.Quantity;
+                    }
+                }
+
+                CurrentTicket.Clear();
+                RecalculateTotal();
+                RequestSearchFocus?.Invoke();
             }
         }
 
@@ -199,6 +239,12 @@ namespace BakeryPOS.ViewModels
         private void FocusSearch()
         {
             RequestSearchFocus?.Invoke();
+        }
+
+        [RelayCommand]
+        private void FocusCart()
+        {
+            RequestCartFocus?.Invoke();
         }
 
         [RelayCommand]
