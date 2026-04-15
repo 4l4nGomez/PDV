@@ -54,6 +54,9 @@ namespace BakeryPOS.ViewModels
         [ObservableProperty]
         private ObservableCollection<ProductAudit> _inventoryAudit;
 
+        [ObservableProperty]
+        private ProductAudit _selectedAuditItem;
+
         // Propiedades de Resumen de Auditoría
         [ObservableProperty]
         private int _totalItemsMissing;
@@ -138,6 +141,11 @@ namespace BakeryPOS.ViewModels
             
             // Cargar inventario teórico
             var products = _context.Products.ToList();
+
+            // Cargar auditoría diaria si existe (solo hoy)
+            var today = DateTime.Today;
+            var daily = _context.DailyInventoryAudits.Where(d => d.Date == today).ToList();
+
             var auditItems = products.Select(p => new ProductAudit 
             { 
                 ProductId = p.Id, 
@@ -147,8 +155,20 @@ namespace BakeryPOS.ViewModels
                 PhysicalStock = p.Stock 
             }).ToList();
 
+            // Aplicar valores guardados si existen para hoy
             foreach(var item in auditItems)
             {
+                var rec = daily.FirstOrDefault(d => d.ProductId == item.ProductId);
+                if (rec != null)
+                {
+                    // If the DB stored null, fall back to theoretical stock
+                    item.PhysicalStock = rec.PhysicalStock ?? item.TheoreticalStock;
+                }
+                else
+                {
+                    item.PhysicalStock = item.TheoreticalStock;
+                }
+
                 item.PropertyChanged += (s, e) => {
                     if (e.PropertyName == nameof(ProductAudit.PhysicalStock))
                         UpdateAuditTotals();
@@ -159,12 +179,74 @@ namespace BakeryPOS.ViewModels
             UpdateAuditTotals();
         }
 
+        [RelayCommand]
+        private void SyncAllTheoretical()
+        {
+            if (InventoryAudit == null) return;
+            foreach (var item in InventoryAudit)
+            {
+                item.PhysicalStock = item.TheoreticalStock;
+            }
+            UpdateAuditTotals();
+        }
+
         private void UpdateAuditTotals()
         {
             if (InventoryAudit == null) return;
             
+            // Sumar solo las diferencias negativas (faltantes)
             TotalItemsMissing = InventoryAudit.Where(i => i.Difference < 0).Sum(i => Math.Abs(i.Difference));
-            FinancialLoss = InventoryAudit.Sum(i => i.FinancialImpact);
+            
+            // Pérdida financiera total basada en diferencias negativas
+            FinancialLoss = InventoryAudit.Where(i => i.Difference < 0).Sum(i => Math.Abs(i.FinancialImpact));
+        }
+
+        [RelayCommand]
+        private void IncreaseAudit()
+        {
+            if (SelectedAuditItem == null) return;
+            SelectedAuditItem.PhysicalStock++;
+            UpdateAuditTotals();
+        }
+
+        [RelayCommand]
+        private void DecreaseAudit()
+        {
+            if (SelectedAuditItem == null) return;
+            if (SelectedAuditItem.PhysicalStock > 0) SelectedAuditItem.PhysicalStock--;
+            UpdateAuditTotals();
+        }
+
+        [RelayCommand]
+        private void SaveAudit()
+        {
+            if (InventoryAudit == null) return;
+
+            var today = DateTime.Today;
+
+            foreach (var item in InventoryAudit)
+            {
+                var existing = _context.DailyInventoryAudits.FirstOrDefault(d => d.Date == today && d.ProductId == item.ProductId);
+                if (existing == null)
+                {
+                    existing = new Models.DailyInventoryAudit
+                    {
+                        Date = today,
+                        ProductId = item.ProductId,
+                        PhysicalStock = item.PhysicalStock,
+                        UserId = AppSession.CurrentUser?.Id ?? 0
+                    };
+                    _context.DailyInventoryAudits.Add(existing);
+                }
+                else
+                {
+                    existing.PhysicalStock = item.PhysicalStock;
+                    existing.UserId = AppSession.CurrentUser?.Id ?? existing.UserId;
+                }
+            }
+
+            _context.SaveChanges();
+            System.Windows.MessageBox.Show("Auditoría guardada correctamente.", "Éxito", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
         }
 
         partial void OnActualCashChanged(decimal value)

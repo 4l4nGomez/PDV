@@ -17,7 +17,7 @@ namespace BakeryPOS.ViewModels
         private string _newProductName = string.Empty;
 
         [ObservableProperty]
-        private decimal _newProductPrice;
+        private decimal? _newProductPrice;
 
         [ObservableProperty]
         private string _newProductCode = string.Empty;
@@ -50,7 +50,7 @@ namespace BakeryPOS.ViewModels
             // Validación estricta de campos obligatorios
             var missingFields = new System.Collections.Generic.List<string>();
             if (string.IsNullOrWhiteSpace(NewProductName)) missingFields.Add("Nombre");
-            if (NewProductPrice <= 0) missingFields.Add("Precio (mayor a 0)");
+            if (!NewProductPrice.HasValue || NewProductPrice.Value <= 0) missingFields.Add("Precio (mayor a 0)");
             if (string.IsNullOrWhiteSpace(NewProductCode)) missingFields.Add("Código");
 
             if (missingFields.Any())
@@ -72,7 +72,7 @@ namespace BakeryPOS.ViewModels
                 var product = new Product
                 {
                     Name = NewProductName,
-                    Price = NewProductPrice,
+                    Price = NewProductPrice.Value,
                     Code = NewProductCode,
                     Category = "General", // Valor por defecto interno para la DB
                     AvailableDays = string.IsNullOrWhiteSpace(NewProductAvailableDays) ? "1,2,3,4,5,6,7" : NewProductAvailableDays,
@@ -85,7 +85,7 @@ namespace BakeryPOS.ViewModels
                 Products.Add(product);
                 
                 NewProductName = string.Empty;
-                NewProductPrice = 0;
+                NewProductPrice = null;
                 NewProductCode = string.Empty;
                 NewProductAvailableDays = "1,2,3,4,5,6,7";
                 
@@ -95,6 +95,30 @@ namespace BakeryPOS.ViewModels
             {
                 System.Windows.MessageBox.Show($"Error al guardar el producto: {ex.Message}\n{ex.InnerException?.Message}", "Error de Base de Datos", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 _context.ChangeTracker.Clear(); // Evitar que el objeto fallido siga rastreado
+            }
+        }
+
+        [RelayCommand]
+        private void UpdateProduct(Product product)
+        {
+            if (product == null) return;
+
+            if (!IsAdmin)
+            {
+                System.Windows.MessageBox.Show("Solo administradores pueden modificar productos.", "Acceso Denegado", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                _context.SaveChanges();
+                System.Windows.MessageBox.Show($"Producto '{product.Name}' actualizado correctamente.", "Éxito", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            }
+            catch (System.Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Error al actualizar el producto: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                _context.ChangeTracker.Clear();
+                LoadProducts(); // Recargar para revertir cambios visuales no guardados
             }
         }
 

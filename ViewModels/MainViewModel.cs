@@ -153,9 +153,14 @@ namespace BakeryPOS.ViewModels
         [RelayCommand]
         private void Logout()
         {
-            AppSession.CurrentUser = null;
-            _posViewModel = null; // Limpiar carrito al cerrar sesión
-            ShowLogin();
+            var result = System.Windows.MessageBox.Show("¿Estás seguro de que deseas CERRAR SESIÓN?\n(Esto limpiará la venta actual pero NO cerrará el turno de caja)", "Confirmar Salida", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Question);
+            
+            if (result == System.Windows.MessageBoxResult.Yes)
+            {
+                AppSession.CurrentUser = null;
+                _posViewModel = null; // Limpiar carrito al cerrar sesión
+                ShowLogin();
+            }
         }
 
         [RelayCommand]
@@ -185,6 +190,11 @@ namespace BakeryPOS.ViewModels
             if (_posViewModel == null)
             {
                 _posViewModel = new PosViewModel();
+            }
+            else
+            {
+                // Refrescar productos disponibles (por si se agregaron/quitaron o cambió el stock fuera del POS)
+                _posViewModel.LoadData();
             }
 
             CurrentView = _posViewModel;
@@ -218,6 +228,15 @@ namespace BakeryPOS.ViewModels
             CurrentView = new UsersViewModel();
             CurrentSection = "Gestión de Usuarios";
             WindowTitle = "Bakery POS - Gestión de Usuarios";
+        }
+
+        [RelayCommand]
+        private void NavigateToSettings()
+        {
+            if (!IsAdmin) return;
+            CurrentView = new SettingsViewModel();
+            CurrentSection = "Ajustes";
+            WindowTitle = "Bakery POS - Ajustes del Sistema";
         }
 
         private bool CheckShift()

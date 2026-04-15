@@ -38,7 +38,7 @@
                 Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVis}}">
             <Grid>
                 <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-                <StackPanel Margin="25,40"><TextBlock Text="🥖 LA ESPIGA" FontSize="22" FontWeight="Black" Foreground="White"/><TextBlock Text="PUNTO DE VENTA" FontSize="10" FontWeight="Bold" Foreground="#94A3B8" Margin="0,5,0,0"/></StackPanel>
+                <StackPanel Margin="25,40"><TextBlock Text="PUNTO DE VENTA" FontSize="22" FontWeight="Black" Foreground="White"/><TextBlock Text="Desarrollador - Alan Cayecatl" FontSize="10" FontWeight="Bold" Foreground="#94A3B8" Margin="0,5,0,0"/></StackPanel>
                 <StackPanel Grid.Row="1" Margin="15,0">
                     <RadioButton Content=" Punto de Venta" Style="{StaticResource NavButtonStyle}" Command="{Binding NavigateToPosCommand}" IsChecked="True"/>
                     <RadioButton Content=" Inventario" Style="{StaticResource NavButtonStyle}" Command="{Binding NavigateToProductsCommand}"/>
@@ -50,16 +50,28 @@
                     <RadioButton Content=" Usuarios" Command="{Binding NavigateToUsersCommand}">
                         <RadioButton.Style><Style TargetType="RadioButton" BasedOn="{StaticResource NavButtonStyle}"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding IsAdmin}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></RadioButton.Style>
                     </RadioButton>
+                    <RadioButton Content=" Ajustes" Command="{Binding NavigateToSettingsCommand}">
+                        <RadioButton.Style><Style TargetType="RadioButton" BasedOn="{StaticResource NavButtonStyle}"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding IsAdmin}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></RadioButton.Style>
+                    </RadioButton>
                 </StackPanel>
-                <Border Grid.Row="2" Background="#111827" Padding="20">
-                    <StackPanel Orientation="Horizontal">
-                        <Border Width="40" Height="40" Background="{StaticResource PrimaryBrush}" CornerRadius="20"><TextBlock Text="👤" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" FontSize="18"/></Border>
-                        <StackPanel Margin="15,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Text="{Binding Source={x:Static models:AppSession.CurrentUser}, Path=Username}" FontWeight="Bold" Foreground="White" FontSize="14"/>
-                            <TextBlock Text="{Binding Source={x:Static models:AppSession.CurrentUser}, Path=Role}" Foreground="#94A3B8" FontSize="11"/>
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
+                <!-- User Profile & Logout -->
+                <Button Grid.Row="2" Command="{Binding LogoutCommand}" BorderThickness="0" Background="Transparent" Padding="0" Cursor="Hand">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="#111827" Padding="20">
+                                <StackPanel Orientation="Horizontal">
+                                    <Border Width="40" Height="40" Background="{StaticResource PrimaryBrush}" CornerRadius="20">
+                                        <TextBlock Text="👤" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" FontSize="18"/>
+                                    </Border>
+                                    <StackPanel Margin="15,0,0,0" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Source={x:Static models:AppSession.CurrentUser}, Path=Username}" FontWeight="Bold" Foreground="White" FontSize="14"/>
+                                        <TextBlock Text="{Binding Source={x:Static models:AppSession.CurrentUser}, Path=Role}" Foreground="#94A3B8" FontSize="11"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
             </Grid>
         </Border>
         

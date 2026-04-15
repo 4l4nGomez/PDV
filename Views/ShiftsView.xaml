@@ -6,7 +6,17 @@
              xmlns:local="clr-namespace:BakeryPOS"
              mc:Ignorable="d" 
              d:DesignHeight="700" d:DesignWidth="1000">
+    <UserControl.InputBindings>
+        <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveAuditCommand}"/>
+        <KeyBinding Key="Add" Command="{Binding IncreaseAuditCommand}"/>
+        <KeyBinding Key="Subtract" Command="{Binding DecreaseAuditCommand}"/>
+    </UserControl.InputBindings>
+
     <UserControl.Resources>
+        <Style x:Key="AuditCellStyle" TargetType="TextBox">
+            <Setter Property="Padding" Value="5"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        </Style>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <local:DifferenceToBrushConverter x:Key="DiffBrushConverter"/>
         
@@ -37,7 +47,7 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             
-            <TabControl Grid.Row="0" BorderThickness="0" Background="Transparent">
+            <TabControl x:Name="MainTabControl" Grid.Row="0" BorderThickness="0" Background="Transparent" SelectionChanged="MainTabControl_SelectionChanged">
                 <TabItem Header="Corte de Efectivo" FontSize="16" Padding="15,5">
                     <Grid Background="White" Margin="0,10,0,0">
                         <Grid.RowDefinitions>
@@ -137,47 +147,111 @@
 
                         <TextBlock Grid.Row="0" Text="Conteo Físico de Inventario" FontSize="22" FontWeight="Bold" Foreground="#1F2937" Margin="15,15,0,15"/>
 
-                        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="15,0,15,20">
-                            <Border Background="#FEF2F2" BorderBrush="#FECACA" BorderThickness="1" CornerRadius="8" Padding="15" Margin="0,0,15,0" Width="180">
+                        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="15,0,15,20"> 
+                            <Button Command="{Binding SaveAuditCommand}" Height="45" Padding="20,5" Background="#10B981" Foreground="White" BorderThickness="0" Margin="0,0,10,0" FontWeight="Bold">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <ContentPresenter.Content>
+                                                    <TextBlock Text="Guardar Auditoría (Ctrl+S)" FontWeight="Bold"/>
+                                                </ContentPresenter.Content>
+                                            </ContentPresenter>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+
+                            <Button Command="{Binding SyncAllTheoreticalCommand}" Height="45" Padding="15,5" Background="#F1F5F9" Foreground="#475569" BorderThickness="1" BorderBrush="#CBD5E1" Margin="0,0,20,0">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <ContentPresenter.Content>
+                                                    <TextBlock Text="Igualar al Teórico (Todo)"/>
+                                                </ContentPresenter.Content>
+                                            </ContentPresenter>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                            
+                            <Border Background="#FEF2F2" BorderBrush="#FECACA" BorderThickness="1" CornerRadius="8" Padding="15" Margin="0,0,10,0" MinWidth="180">
                                 <StackPanel>
-                                    <TextBlock Text="PIEZAS FALTANTES" FontSize="11" Foreground="#991B1B" FontWeight="Bold"/>
-                                    <TextBlock Text="{Binding TotalItemsMissing}" FontSize="24" FontWeight="Bold" Foreground="#DC2626"/>
+                                    <TextBlock Text="PIEZAS FALTANTES" FontSize="11" Foreground="#991B1B" FontWeight="Bold" Opacity="0.8"/>
+                                    <TextBlock Text="{Binding TotalItemsMissing}" FontSize="26" FontWeight="Black" Foreground="#DC2626"/>
                                 </StackPanel>
                             </Border>
 
-                            <Border Background="#F9FAFB" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="15" Width="220">
+                            <Border Background="#F9FAFB" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="15" MinWidth="200">
                                 <StackPanel>
-                                    <TextBlock Text="MÉRDIDA ECONÓMICA" FontSize="11" Foreground="#374151" FontWeight="Bold"/>
-                                    <TextBlock Text="{Binding FinancialLoss, StringFormat=C}" FontSize="24" FontWeight="Bold" Foreground="{Binding FinancialLoss, Converter={StaticResource DiffBrushConverter}}"/>
+                                    <TextBlock Text="MÉRDA TOTAL EN PESOS" FontSize="11" Foreground="#374151" FontWeight="Bold" Opacity="0.8"/>
+                                    <TextBlock Text="{Binding FinancialLoss, StringFormat=C}" FontSize="26" FontWeight="Black" Foreground="#1F2937"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
 
-                        <DataGrid Grid.Row="2" ItemsSource="{Binding InventoryAudit}" AutoGenerateColumns="False" CanUserAddRows="False" GridLinesVisibility="None" RowBackground="White" Margin="15,0,15,15" BorderThickness="1" BorderBrush="#E5E7EB">
+                        <DataGrid x:Name="AuditDataGrid" Grid.Row="2" ItemsSource="{Binding InventoryAudit}" AutoGenerateColumns="False" 
+                                  CanUserAddRows="False" GridLinesVisibility="None" RowBackground="White" 
+                                  Margin="15,0,15,15" BorderThickness="1" BorderBrush="#E5E7EB" 
+                                  SelectedItem="{Binding SelectedAuditItem, Mode=TwoWay}" 
+                                  SelectionMode="Single" SelectionUnit="FullRow"
+                                  AlternationCount="2" RowHeight="45"
+                                  PreviewKeyDown="AuditDataGrid_PreviewKeyDown">
+                            <DataGrid.Resources>
+                                <Style TargetType="DataGridRow">
+                                    <Style.Triggers>
+                                        <Trigger Property="ItemsControl.AlternationIndex" Value="1">
+                                            <Setter Property="Background" Value="#F8FAFC"/>
+                                        </Trigger>
+                                        <DataTrigger Binding="{Binding Difference}" Value="0">
+                                            <Setter Property="Opacity" Value="0.6"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Difference, Converter={StaticResource DiffBrushConverter}}" Value="#DC2626">
+                                            <Setter Property="Background" Value="#FFF1F2"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.Resources>
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Pan" Binding="{Binding Name}" Width="*" IsReadOnly="True">
+                                <DataGridTextColumn Header="NOMBRE DEL PRODUCTO" Binding="{Binding Name}" Width="*" IsReadOnly="True" FontWeight="Bold">
                                     <DataGridTextColumn.ElementStyle>
                                         <Style TargetType="TextBlock">
                                             <Setter Property="VerticalAlignment" Value="Center"/>
-                                            <Setter Property="Margin" Value="10,0"/>
+                                            <Setter Property="Margin" Value="15,0"/>
+                                            <Setter Property="FontSize" Value="15"/>
                                         </Style>
                                     </DataGridTextColumn.ElementStyle>
                                 </DataGridTextColumn>
                                 
-                                <DataGridTextColumn Header="Teórico (Stock)" Binding="{Binding TheoreticalStock}" Width="100" IsReadOnly="True" HeaderStyle="{StaticResource CenterHeader}"/>
+                                <DataGridTextColumn Header="STOCK TEÓRICO" Binding="{Binding TheoreticalStock}" Width="130" IsReadOnly="True" HeaderStyle="{StaticResource CenterHeader}">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="HorizontalAlignment" Value="Center"/>
+                                            <Setter Property="VerticalAlignment" Value="Center"/>
+                                            <Setter Property="FontSize" Value="14"/>
+                                            <Setter Property="Foreground" Value="#64748B"/>
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
                                 
-                                <DataGridTemplateColumn Header="Físico (Conteo)" Width="130">
+                                <DataGridTemplateColumn Header="CONTEO REAL" Width="150" HeaderStyle="{StaticResource CenterHeader}">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBox Text="{Binding PhysicalStock, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" FontWeight="Bold" Padding="5" Margin="10,2" BorderBrush="#D1D5DB"/>
+                                            <Border BorderThickness="1" BorderBrush="#CBD5E1" CornerRadius="6" Background="White" Margin="10,4">
+                                                <TextBox Text="{Binding PhysicalStock, UpdateSourceTrigger=PropertyChanged}" 
+                                                         TextAlignment="Center" FontWeight="Black" FontSize="18" 
+                                                         BorderThickness="0" Background="Transparent" VerticalContentAlignment="Center"/>
+                                            </Border>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
-                                <DataGridTextColumn Header="Diferencia" Binding="{Binding Difference}" Width="100" IsReadOnly="True">
+                                <DataGridTextColumn Header="DIFERENCIA" Binding="{Binding Difference}" Width="120" IsReadOnly="True" HeaderStyle="{StaticResource CenterHeader}">
                                     <DataGridTextColumn.ElementStyle>
                                         <Style TargetType="TextBlock">
-                                            <Setter Property="FontWeight" Value="Bold"/>
+                                            <Setter Property="FontWeight" Value="Black"/>
+                                            <Setter Property="FontSize" Value="16"/>
                                             <Setter Property="Foreground" Value="{Binding Difference, Converter={StaticResource DiffBrushConverter}}"/>
                                             <Setter Property="HorizontalAlignment" Value="Center"/>
                                             <Setter Property="VerticalAlignment" Value="Center"/>
@@ -185,14 +259,15 @@
                                     </DataGridTextColumn.ElementStyle>
                                 </DataGridTextColumn>
 
-                                <DataGridTextColumn Header="Pérdida $" Binding="{Binding FinancialImpact, StringFormat=C}" Width="120" IsReadOnly="True">
+                                <DataGridTextColumn Header="VALOR DE PÉRDIDA" Binding="{Binding FinancialImpact, StringFormat=C}" Width="150" IsReadOnly="True">
                                     <DataGridTextColumn.ElementStyle>
                                         <Style TargetType="TextBlock">
-                                            <Setter Property="FontWeight" Value="Bold"/>
+                                            <Setter Property="FontWeight" Value="Black"/>
+                                            <Setter Property="FontSize" Value="16"/>
                                             <Setter Property="Foreground" Value="{Binding FinancialImpact, Converter={StaticResource DiffBrushConverter}}"/>
                                             <Setter Property="HorizontalAlignment" Value="Right"/>
                                             <Setter Property="VerticalAlignment" Value="Center"/>
-                                            <Setter Property="Margin" Value="0,0,15,0"/>
+                                            <Setter Property="Margin" Value="0,0,20,0"/>
                                         </Style>
                                     </DataGridTextColumn.ElementStyle>
                                 </DataGridTextColumn>

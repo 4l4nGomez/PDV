@@ -38,7 +38,8 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Margin="0,0,10,0">
                             <TextBlock Text="Código:" Margin="0,0,0,5" Foreground="#6B7280" FontSize="11" FontWeight="Bold"/>
-                            <TextBox x:Name="ProductionCodeInput" Text="{Binding ProductionSearchCode, UpdateSourceTrigger=PropertyChanged}" Height="40" VerticalContentAlignment="Center" Padding="8,0" FontSize="16" FontWeight="Bold" BorderBrush="#10B981"/>
+                            <TextBox x:Name="ProductionCodeInput" Text="{Binding ProductionSearchCode, UpdateSourceTrigger=PropertyChanged}" Height="40" VerticalContentAlignment="Center" Padding="8,0" FontSize="16" FontWeight="Bold" BorderBrush="#10B981"
+                                     PreviewKeyDown="ProductionCodeInput_PreviewKeyDown"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1">
                             <TextBlock Text="Nombre del Pan:" Margin="0,0,0,5" Foreground="#6B7280" FontSize="11" FontWeight="Bold"/>
@@ -47,7 +48,8 @@
                     </Grid>
 
                     <TextBlock Text="Cantidad Horneada (Piezas):" Margin="0,0,0,5" Foreground="#374151" FontWeight="SemiBold"/>
-                    <TextBox Text="{Binding QuantityProduced, UpdateSourceTrigger=PropertyChanged}" Height="45" Margin="0,0,0,20" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="5,0" FontSize="24" FontWeight="Black" BorderBrush="#10B981" BorderThickness="2"/>
+                    <TextBox x:Name="ProductionQtyInput" Text="{Binding QuantityProduced, UpdateSourceTrigger=PropertyChanged}" Height="45" Margin="0,0,0,20" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="5,0" FontSize="24" FontWeight="Black" BorderBrush="#10B981" BorderThickness="2"
+                                     PreviewKeyDown="ProductionQtyInput_PreviewKeyDown"/>
 
                     <Button x:Name="BtnRegisterProduction" Content="REGISTRAR ENTRADA [Enter]" Command="{Binding RegisterProductionCommand}" Click="BtnRegisterProduction_Click" IsDefault="True" Height="50" Background="#10B981" Foreground="White" FontWeight="Bold" FontSize="16" BorderThickness="0" Cursor="Hand">
                         <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="8"/></Style></Button.Resources>
@@ -72,7 +74,8 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Margin="0,0,10,0">
                             <TextBlock Text="Código:" Margin="0,0,0,5" Foreground="#6B7280" FontSize="11" FontWeight="Bold"/>
-                            <TextBox x:Name="ShrinkageCodeInput" Text="{Binding ShrinkageSearchCode, UpdateSourceTrigger=PropertyChanged}" Height="40" VerticalContentAlignment="Center" Padding="8,0" FontSize="16" FontWeight="Bold" BorderBrush="#EF4444"/>
+                            <TextBox x:Name="ShrinkageCodeInput" Text="{Binding ShrinkageSearchCode, UpdateSourceTrigger=PropertyChanged}" Height="40" VerticalContentAlignment="Center" Padding="8,0" FontSize="16" FontWeight="Bold" BorderBrush="#EF4444"
+                                     PreviewKeyDown="ShrinkageCodeInput_PreviewKeyDown"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1">
                             <TextBlock Text="Nombre del Pan:" Margin="0,0,0,5" Foreground="#6B7280" FontSize="11" FontWeight="Bold"/>
@@ -87,7 +90,8 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Margin="0,0,10,0">
                             <TextBlock Text="Cantidad:" Margin="0,0,0,5" Foreground="#374151" FontWeight="SemiBold"/>
-                            <TextBox Text="{Binding ShrinkageQuantity, UpdateSourceTrigger=PropertyChanged}" Height="45" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="5,0" FontSize="24" FontWeight="Black" BorderBrush="#EF4444" BorderThickness="2"/>
+                            <TextBox x:Name="ShrinkageQtyInput" Text="{Binding ShrinkageQuantity, UpdateSourceTrigger=PropertyChanged}" Height="45" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Padding="5,0" FontSize="24" FontWeight="Black" BorderBrush="#EF4444" BorderThickness="2"
+                                     PreviewKeyDown="ShrinkageQtyInput_PreviewKeyDown"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1">
                             <TextBlock Text="Motivo de la merma:" Margin="0,0,0,5" Foreground="#374151" FontWeight="SemiBold"/>

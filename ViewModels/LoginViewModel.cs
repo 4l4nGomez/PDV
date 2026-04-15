@@ -53,7 +53,7 @@ namespace BakeryPOS.ViewModels
         }
 
         [RelayCommand]
-        private void Login()
+        private void Login(object passwordProvider)
         {
             ErrorMessage = string.Empty;
 
@@ -63,14 +63,21 @@ namespace BakeryPOS.ViewModels
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(Password))
+            // El proveedor de contraseña será el PasswordBox enviado desde la Vista
+            string passwordToVerify = string.Empty;
+            if (passwordProvider is System.Windows.Controls.PasswordBox pb)
+            {
+                passwordToVerify = pb.Password;
+            }
+
+            if (string.IsNullOrWhiteSpace(passwordToVerify))
             {
                 ErrorMessage = "Ingrese la contraseña.";
                 return;
             }
 
             // Verify password
-            if (!BCrypt.Net.BCrypt.Verify(Password, SelectedUser.PasswordHash))
+            if (!BCrypt.Net.BCrypt.Verify(passwordToVerify, SelectedUser.PasswordHash))
             {
                 ErrorMessage = "Contraseña incorrecta.";
                 return;

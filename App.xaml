@@ -15,6 +15,7 @@
         <DataTemplate DataType="{x:Type viewModels:ShiftsViewModel}"><views:ShiftsView /></DataTemplate>
         <DataTemplate DataType="{x:Type viewModels:ReportsViewModel}"><views:ReportsView /></DataTemplate>
         <DataTemplate DataType="{x:Type viewModels:UsersViewModel}"><views:UsersView /></DataTemplate>
+        <DataTemplate DataType="{x:Type viewModels:SettingsViewModel}"><views:SettingsView /></DataTemplate>
 
         <!-- Colores -->
         <SolidColorBrush x:Key="PrimaryBrush" Color="#4F46E5"/>

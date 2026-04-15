@@ -128,8 +128,11 @@ namespace BakeryPOS.ViewModels
             }
         }
 
-        private void LoadData()
+        public void LoadData()
         {
+            // Limpiar el tracker para asegurar que traemos datos frescos de la DB
+            // y no objetos en caché que podrían haber sido eliminados/modificados en otras vistas
+            _context.ChangeTracker.Clear();
             _allAvailableProducts = _context.Products.Where(p => p.Stock > 0).ToList();
             FilterProducts();
         }
@@ -319,7 +322,7 @@ namespace BakeryPOS.ViewModels
             var sale = DoCheckout();
             if (sale != null) 
             {
-                // 4. CREAR TICKET CON LA COPIA AISLADA
+                // 4. DEFINIR DATOS Y ENVIAR A IMPRESIÓN DIRECTA
                 var ticketData = new TicketData
                 {
                     SaleDate = DateTime.Now,
@@ -329,9 +332,7 @@ namespace BakeryPOS.ViewModels
                     Items = listaItemsParaTicket
                 };
 
-                var ticketWin = new Views.TicketView(ticketData);
-                ticketWin.Owner = System.Windows.Application.Current.MainWindow;
-                ticketWin.ShowDialog();
+                Views.TicketView.ImprimirDirecto(ticketData);
                 
                 LoadData(); 
             }

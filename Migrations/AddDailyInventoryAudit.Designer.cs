@@ -1,0 +1,167 @@
+using System;
+using BakeryPOS.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+
+#nullable disable
+
+namespace BakeryPOS.Migrations
+{
+    [DbContext(typeof(AppDbContext))]
+    [Migration("20260415_AddDailyInventoryAudit")]
+    partial class AddDailyInventoryAudit
+    {
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        {
+#pragma warning disable 612, 618
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
+
+            // Existing model entities (copied from AppDbContextModelSnapshot)
+            modelBuilder.Entity("BakeryPOS.Models.CashMovement", b =>
+                {
+                    b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("INTEGER");
+                    b.Property<decimal>("Amount").HasColumnType("TEXT");
+                    b.Property<string>("Description").IsRequired().HasColumnType("TEXT");
+                    b.Property<DateTime>("MovementDate").HasColumnType("TEXT");
+                    b.Property<int>("ShiftId").HasColumnType("INTEGER");
+                    b.Property<int>("UserId").HasColumnType("INTEGER");
+                    b.HasKey("Id");
+                    b.HasIndex("ShiftId");
+                    b.HasIndex("UserId");
+                    b.ToTable("CashMovements");
+                });
+
+            modelBuilder.Entity("BakeryPOS.Models.Product", b =>
+                {
+                    b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("INTEGER");
+                    b.Property<string>("AvailableDays").IsRequired().HasColumnType("TEXT");
+                    b.Property<string>("Category").IsRequired().HasColumnType("TEXT");
+                    b.Property<string>("Code").IsRequired().HasColumnType("TEXT");
+                    b.Property<string>("Name").IsRequired().HasColumnType("TEXT");
+                    b.Property<decimal>("Price").HasColumnType("TEXT");
+                    b.Property<int>("Stock").HasColumnType("INTEGER");
+                    b.HasKey("Id");
+                    b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("BakeryPOS.Models.ProductionLog", b =>
+                {
+                    b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("INTEGER");
+                    b.Property<int>("ProductId").HasColumnType("INTEGER");
+                    b.Property<DateTime>("ProductionDate").HasColumnType("TEXT");
+                    b.Property<int>("QuantityProduced").HasColumnType("INTEGER");
+                    b.Property<int>("UserId").HasColumnType("INTEGER");
+                    b.HasKey("Id");
+                    b.HasIndex("ProductId");
+                    b.HasIndex("UserId");
+                    b.ToTable("ProductionLogs");
+                });
+
+            modelBuilder.Entity("BakeryPOS.Models.Sale", b =>
+                {
+                    b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("INTEGER");
+                    b.Property<string>("PaymentMethod").IsRequired().HasColumnType("TEXT");
+                    b.Property<DateTime>("SaleDate").HasColumnType("TEXT");
+                    b.Property<int>("ShiftId").HasColumnType("INTEGER");
+                    b.Property<decimal>("TotalAmount").HasColumnType("TEXT");
+                    b.Property<int>("UserId").HasColumnType("INTEGER");
+                    b.HasKey("Id");
+                    b.HasIndex("ShiftId");
+                    b.HasIndex("UserId");
+                    b.ToTable("Sales");
+                });
+
+            modelBuilder.Entity("BakeryPOS.Models.SaleItem", b =>
+                {
+                    b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("INTEGER");
+                    b.Property<decimal>("Discount").HasColumnType("TEXT");
+                    b.Property<int>("ProductId").HasColumnType("INTEGER");
+                    b.Property<int>("Quantity").HasColumnType("INTEGER");
+                    b.Property<int>("SaleId").HasColumnType("INTEGER");
+                    b.Property<decimal>("SubTotal").HasColumnType("TEXT");
+                    b.Property<decimal>("UnitPrice").HasColumnType("TEXT");
+                    b.HasKey("Id");
+                    b.HasIndex("ProductId");
+                    b.HasIndex("SaleId");
+                    b.ToTable("SaleItems");
+                });
+
+            modelBuilder.Entity("BakeryPOS.Models.Shift", b =>
+                {
+                    b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("INTEGER");
+                    b.Property<decimal>("ActualEndingCash").HasColumnType("TEXT");
+                    b.Property<DateTime?>("EndTime").HasColumnType("TEXT");
+                    b.Property<decimal>("ExpectedEndingCash").HasColumnType("TEXT");
+                    b.Property<bool>("IsClosed").HasColumnType("INTEGER");
+                    b.Property<DateTime>("StartTime").HasColumnType("TEXT");
+                    b.Property<decimal>("StartingCash").HasColumnType("TEXT");
+                    b.Property<decimal>("TotalExpenses").HasColumnType("TEXT");
+                    b.Property<decimal>("TotalInflows").HasColumnType("TEXT");
+                    b.Property<decimal>("TotalSales").HasColumnType("TEXT");
+                    b.Property<decimal>("TotalShrinkage").HasColumnType("TEXT");
+                    b.Property<int>("UserId").HasColumnType("INTEGER");
+                    b.HasKey("Id");
+                    b.HasIndex("UserId");
+                    b.ToTable("Shifts");
+                });
+
+            modelBuilder.Entity("BakeryPOS.Models.Shrinkage", b =>
+                {
+                    b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("INTEGER");
+                    b.Property<int>("ProductId").HasColumnType("INTEGER");
+                    b.Property<int>("Quantity").HasColumnType("INTEGER");
+                    b.Property<string>("Reason").IsRequired().HasColumnType("TEXT");
+                    b.Property<DateTime>("Timestamp").HasColumnType("TEXT");
+                    b.Property<int>("UserId").HasColumnType("INTEGER");
+                    b.HasKey("Id");
+                    b.HasIndex("ProductId");
+                    b.HasIndex("UserId");
+                    b.ToTable("Shrinkages");
+                });
+
+            modelBuilder.Entity("BakeryPOS.Models.User", b =>
+                {
+                    b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("INTEGER");
+                    b.Property<string>("PasswordHash").IsRequired().HasColumnType("TEXT");
+                    b.Property<string>("Role").IsRequired().HasColumnType("TEXT");
+                    b.Property<string>("Username").IsRequired().HasColumnType("TEXT");
+                    b.HasKey("Id");
+                    b.ToTable("Users");
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            PasswordHash = "$2a$11$75IpD3/Q0pbp6VhE39JrcupgqjR/pkDW/mS7G1Azp1ydJbEc1on0G",
+                            Role = "admin",
+                            Username = "admin"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            PasswordHash = "$2a$11$UMdwxpbiWwE.fOazIWs4weZeVNIOY1XCP6kgUSkS8ytUSgJjyiZpK",
+                            Role = "cajero",
+                            Username = "cajero"
+                        });
+                });
+
+            // New DailyInventoryAudits entity
+            modelBuilder.Entity("BakeryPOS.Models.DailyInventoryAudit", b =>
+                {
+                    b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("INTEGER");
+                    b.Property<DateTime>("Date").HasColumnType("TEXT");
+                    b.Property<int?>("ProductId").HasColumnType("INTEGER");
+                    b.Property<int?>("PhysicalStock").HasColumnType("INTEGER");
+                    b.Property<int?>("UserId").HasColumnType("INTEGER");
+                    b.Property<string>("Note").HasColumnType("TEXT");
+                    b.HasKey("Id");
+                    b.HasIndex("ProductId");
+                    b.HasIndex("UserId");
+                    b.ToTable("DailyInventoryAudits");
+                });
+
+#pragma warning restore 612, 618
+        }
+    }
+}

@@ -9,6 +9,11 @@ namespace BakeryPOS.Views
             InitializeComponent();
         }
 
+        private void UserControl_Loaded(object sender, System.Windows.RoutedEventArgs e)
+        {
+            CodeInput.Focus();
+        }
+
         private void ProductsGrid_BeginningEdit(object sender, DataGridBeginningEditEventArgs e)
         {
             if (!BakeryPOS.Models.AppSession.IsAdmin)

@@ -398,6 +398,21 @@ namespace BakeryPOS.Migrations
                 {
                     b.Navigation("Items");
                 });
+            // New DailyInventoryAudits entity
+            modelBuilder.Entity("BakeryPOS.Models.DailyInventoryAudit", b =>
+                {
+                    b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("INTEGER");
+                    b.Property<DateTime>("Date").HasColumnType("TEXT");
+                    b.Property<int?>("ProductId").HasColumnType("INTEGER");
+                    b.Property<int?>("PhysicalStock").HasColumnType("INTEGER");
+                    b.Property<int?>("UserId").HasColumnType("INTEGER");
+                    b.Property<string>("Note").HasColumnType("TEXT");
+                    b.HasKey("Id");
+                    b.HasIndex("ProductId");
+                    b.HasIndex("UserId");
+                    b.ToTable("DailyInventoryAudits");
+                });
+
 #pragma warning restore 612, 618
         }
     }

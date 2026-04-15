@@ -6,7 +6,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="800">
     <UserControl.InputBindings>
-        <KeyBinding Key="Enter" Command="{Binding LoginCommand}"/>
+        <KeyBinding Key="Enter" Command="{Binding LoginCommand}" CommandParameter="{Binding ElementName=PasswordInput}"/>
     </UserControl.InputBindings>
     <Grid Background="#F3F4F6">
         <Border Background="White" Width="350" Height="400" CornerRadius="10" Padding="30" HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -36,16 +36,16 @@
                 </ComboBox>
                 
                 <TextBlock Text="Contraseña" FontWeight="Bold" Margin="0,0,0,5"/>
-                <!-- For an MVP using TextBox instead of PasswordBox since PasswordBox avoids clear text bindings out of the box in WPF. -->
-                <TextBox Text="{Binding Password, UpdateSourceTrigger=PropertyChanged}" Height="40" Padding="5" FontSize="16" Margin="0,0,0,30">
-                    <TextBox.Resources>
+                <!-- Usando PasswordBox para que los caracteres no se vean (se verán como puntos) -->
+                <PasswordBox x:Name="PasswordInput" Height="40" Padding="5" FontSize="16" Margin="0,0,0,30">
+                    <PasswordBox.Resources>
                         <Style TargetType="Border">
                             <Setter Property="CornerRadius" Value="5"/>
                         </Style>
-                    </TextBox.Resources>
-                </TextBox>
+                    </PasswordBox.Resources>
+                </PasswordBox>
                 
-                <Button Content="INGRESAR" Command="{Binding LoginCommand}" Height="45" Background="#2563EB" Foreground="White" FontSize="16" FontWeight="Bold">
+                <Button Content="INGRESAR" Command="{Binding LoginCommand}" CommandParameter="{Binding ElementName=PasswordInput}" Height="45" Background="#2563EB" Foreground="White" FontSize="16" FontWeight="Bold">
                     <Button.Resources>
                         <Style TargetType="Border">
                             <Setter Property="CornerRadius" Value="5"/>

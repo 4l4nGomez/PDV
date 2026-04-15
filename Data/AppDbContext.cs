@@ -14,6 +14,8 @@ namespace BakeryPOS.Models
         public DbSet<ProductionLog> ProductionLogs { get; set; }
         public DbSet<CashMovement> CashMovements { get; set; }
         public DbSet<Shrinkage> Shrinkages { get; set; }
+        public DbSet<DailyInventoryAudit> DailyInventoryAudits { get; set; }
+        public DbSet<Configuration> Configurations { get; set; }
 
         public AppDbContext()
         {
@@ -36,6 +38,21 @@ namespace BakeryPOS.Models
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // Relación opcional para la auditoría de inventario
+            modelBuilder.Entity<DailyInventoryAudit>()
+                .HasOne(d => d.Product)
+                .WithMany()
+                .HasForeignKey(d => d.ProductId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<DailyInventoryAudit>()
+                .HasOne(d => d.User)
+                .WithMany()
+                .HasForeignKey(d => d.UserId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
             
             // Seed initial admin and cajero user with BCrypt hashed passwords
             modelBuilder.Entity<User>().HasData(

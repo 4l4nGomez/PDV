@@ -4,7 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
-             d:DesignHeight="600" d:DesignWidth="800">
+             d:DesignHeight="600" d:DesignWidth="800"
+             Loaded="UserControl_Loaded">
     <UserControl.InputBindings>
         <KeyBinding Key="Enter" Command="{Binding AddProductCommand}"/>
     </UserControl.InputBindings>
@@ -20,23 +21,23 @@
         <StackPanel Orientation="Horizontal" Margin="0,0,0,20" Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}">
             <StackPanel Margin="0,0,10,0">
                 <TextBlock Text="Código:" FontSize="12" Foreground="Gray"/>
-                <TextBox Text="{Binding NewProductCode}" Width="80"/>
+                <TextBox x:Name="CodeInput" Text="{Binding NewProductCode, UpdateSourceTrigger=PropertyChanged}" Width="80" TabIndex="1"/>
             </StackPanel>
 
             <StackPanel Margin="0,0,10,0">
                 <TextBlock Text="Nombre:" FontSize="12" Foreground="Gray"/>
-                <TextBox Text="{Binding NewProductName}" Width="150"/>
+                <TextBox Text="{Binding NewProductName, UpdateSourceTrigger=PropertyChanged}" Width="150" TabIndex="2"/>
             </StackPanel>
             
             <StackPanel Margin="0,0,10,0">
                 <TextBlock Text="Precio:" FontSize="12" Foreground="Gray"/>
-                <TextBox Text="{Binding NewProductPrice}" Width="80"/>
+                <TextBox Text="{Binding NewProductPrice, UpdateSourceTrigger=PropertyChanged}" Width="80" TabIndex="3"/>
             </StackPanel>
 
-            <Button Content="Agregar Producto" Command="{Binding AddProductCommand}" IsDefault="True" VerticalAlignment="Bottom" Height="30" Padding="15,0" Background="#10B981" Foreground="White" BorderThickness="0" FontWeight="Bold"/>
-            </StackPanel>
+            <Button Content="Agregar Producto" Command="{Binding AddProductCommand}" IsDefault="True" VerticalAlignment="Bottom" Height="30" Padding="15,0" Background="#10B981" Foreground="White" BorderThickness="0" FontWeight="Bold" TabIndex="4"/>
+        </StackPanel>
 
-            <DataGrid Grid.Row="1" ItemsSource="{Binding Products}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionMode="Single" BeginningEdit="ProductsGrid_BeginningEdit">
+        <DataGrid Grid.Row="1" ItemsSource="{Binding Products}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionMode="Single" BeginningEdit="ProductsGrid_BeginningEdit">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50" IsReadOnly="True"/>
                 <DataGridTextColumn Header="Código" Binding="{Binding Code}" Width="80"/>
@@ -47,7 +48,10 @@
                 <DataGridTemplateColumn Header="Acciones" Visibility="{Binding DataContext.IsAdmin, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVis}}">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Button Content="Eliminar" Command="{Binding DataContext.DeleteProductCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}" Background="#EF4444" Foreground="White" Padding="5,2" BorderThickness="0"/>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="Modificar" Command="{Binding DataContext.UpdateProductCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}" Background="#3B82F6" Foreground="White" Padding="5,2" BorderThickness="0" Margin="0,0,5,0"/>
+                                <Button Content="Eliminar" Command="{Binding DataContext.DeleteProductCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}" Background="#EF4444" Foreground="White" Padding="5,2" BorderThickness="0"/>
+                            </StackPanel>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
