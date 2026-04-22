@@ -201,13 +201,23 @@
                                   AlternationCount="2" RowHeight="45"
                                   PreviewKeyDown="AuditDataGrid_PreviewKeyDown">
                             <DataGrid.Resources>
+                                <!-- Estilo para mejorar el contraste al seleccionar filas -->
+                                <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#3B82F6"/>
+                                <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="White"/>
+                                <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="#E2E8F0"/>
+                                <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="#1E293B"/>
+
                                 <Style TargetType="DataGridRow">
+                                    <Setter Property="FontSize" Value="14"/>
                                     <Style.Triggers>
                                         <Trigger Property="ItemsControl.AlternationIndex" Value="1">
                                             <Setter Property="Background" Value="#F8FAFC"/>
                                         </Trigger>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                        </Trigger>
                                         <DataTrigger Binding="{Binding Difference}" Value="0">
-                                            <Setter Property="Opacity" Value="0.6"/>
+                                            <Setter Property="Opacity" Value="0.8"/>
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding Difference, Converter={StaticResource DiffBrushConverter}}" Value="#DC2626">
                                             <Setter Property="Background" Value="#FFF1F2"/>
@@ -231,8 +241,14 @@
                                         <Style TargetType="TextBlock">
                                             <Setter Property="HorizontalAlignment" Value="Center"/>
                                             <Setter Property="VerticalAlignment" Value="Center"/>
-                                            <Setter Property="FontSize" Value="14"/>
-                                            <Setter Property="Foreground" Value="#64748B"/>
+                                            <Setter Property="FontSize" Value="15"/>
+                                            <Setter Property="FontWeight" Value="Bold"/>
+                                            <Setter Property="Foreground" Value="#1E293B"/> <!-- Color oscuro para máximo contraste -->
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                    <Setter Property="Foreground" Value="White"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
                                         </Style>
                                     </DataGridTextColumn.ElementStyle>
                                 </DataGridTextColumn>
@@ -243,7 +259,8 @@
                                             <Border BorderThickness="1" BorderBrush="#CBD5E1" CornerRadius="6" Background="White" Margin="10,4">
                                                 <TextBox Text="{Binding PhysicalStock, UpdateSourceTrigger=PropertyChanged}" 
                                                          TextAlignment="Center" FontWeight="Black" FontSize="18" 
-                                                         BorderThickness="0" Background="Transparent" VerticalContentAlignment="Center"/>
+                                                         BorderThickness="0" Background="Transparent" VerticalContentAlignment="Center"
+                                                         Foreground="#1E293B"/> <!-- Color oscuro fijo para que siempre sea visible sobre el fondo blanco -->
                                             </Border>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>

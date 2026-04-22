@@ -16,6 +16,7 @@ namespace BakeryPOS.ViewModels
         public string Code { get; set; }
         public string Name { get; set; }
         public string Category { get; set; }
+        public decimal Price { get; set; }
         
         [ObservableProperty]
         private int _stock;
@@ -78,6 +79,42 @@ namespace BakeryPOS.ViewModels
         [ObservableProperty]
         private string _statusColor = "#10B981";
 
+        [RelayCommand]
+        private void ExportToExcel()
+        {
+            try
+            {
+                var saveFileDialog = new Microsoft.Win32.SaveFileDialog
+                {
+                    Filter = "Archivo Excel (CSV)|*.csv",
+                    FileName = $"Inventario_Panaderia_{DateTime.Now:yyyyMMdd_HHmm}.csv",
+                    Title = "Exportar Inventario a Excel"
+                };
+
+                if (saveFileDialog.ShowDialog() == true)
+                {
+                    var sb = new System.Text.StringBuilder();
+                    
+                    // Cabeceras solicitadas
+                    sb.AppendLine("Codigo,Nombre,Precio,Stock");
+
+                    foreach (var p in Products)
+                    {
+                        string safeName = p.Name.Replace(",", " ");
+                        sb.AppendLine($"{p.Code},{safeName},{p.Price},{p.Stock}");
+                    }
+
+                    System.IO.File.WriteAllText(saveFileDialog.FileName, sb.ToString(), System.Text.Encoding.UTF8);
+                    
+                    System.Windows.MessageBox.Show("Inventario exportado correctamente.", "Éxito", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Error al exportar: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            }
+        }
+
         partial void OnProductionSearchCodeChanged(string value)
         {
             if (string.IsNullOrWhiteSpace(value)) return;
@@ -115,6 +152,7 @@ namespace BakeryPOS.ViewModels
                 Code = p.Code,
                 Name = p.Name,
                 Category = p.Category,
+                Price = p.Price,
                 Stock = p.Stock,
                 TotalShrinkage = shrinkagesToday.Where(s => s.ProductId == p.Id).Sum(s => s.Quantity),
                 TotalProduced = productionsToday.Where(pr => pr.ProductId == p.Id).Sum(pr => pr.QuantityProduced)

@@ -161,74 +161,38 @@ namespace BakeryPOS.ViewModels
             }
         }
         [RelayCommand]
-        private void ExportDatabase()
+        private void ExportToExcel()
         {
             try
             {
-                var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                string sourcePath = System.IO.Path.Combine(localAppData, "BakeryPOS", "bakery_pos.db");
-
-                if (!System.IO.File.Exists(sourcePath))
-                {
-                    System.Windows.MessageBox.Show("No se encontró la base de datos actual para exportar.", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
-                    return;
-                }
-
                 var saveFileDialog = new Microsoft.Win32.SaveFileDialog
                 {
-                    Filter = "Base de Datos SQLite (*.db)|*.db",
-                    FileName = $"Inventario_Alan_{DateTime.Now:yyyyMMdd_HHmm}.db",
-                    Title = "Exportar Respaldo de Inventario"
+                    Filter = "Archivo Excel (CSV)|*.csv",
+                    FileName = $"Inventario_{DateTime.Now:yyyyMMdd}.csv",
+                    Title = "Exportar Inventario"
                 };
 
                 if (saveFileDialog.ShowDialog() == true)
                 {
-                    System.IO.File.Copy(sourcePath, saveFileDialog.FileName, true);
-                    System.Windows.MessageBox.Show("Base de datos exportada exitosamente.", "Respaldo Creado", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                    var sb = new System.Text.StringBuilder();
+                    
+                    // Cabeceras solicitadas
+                    sb.AppendLine("Codigo,Nombre,Precio,Stock");
+
+                    foreach (var p in Products)
+                    {
+                        // Escapar comas en el nombre
+                        string safeName = p.Name.Replace(",", " ");
+                        sb.AppendLine($"{p.Code},{safeName},{p.Price},{p.Stock}");
+                    }
+
+                    System.IO.File.WriteAllText(saveFileDialog.FileName, sb.ToString(), System.Text.Encoding.UTF8);
+                    System.Windows.MessageBox.Show("Inventario exportado correctamente.", "Éxito", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                 }
             }
             catch (Exception ex)
             {
                 System.Windows.MessageBox.Show($"Error al exportar: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
-            }
-        }
-
-        [RelayCommand]
-        private void ImportDatabase()
-        {
-            var result = System.Windows.MessageBox.Show("¡ADVERTENCIA CRÍTICA!\n\nAl importar una base de datos, se REEMPLAZARÁ TODA la información actual (productos, stock, ventas y usuarios). \n\n¿Deseas continuar?", "Confirmar Importación", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Warning);
-            
-            if (result != System.Windows.MessageBoxResult.Yes) return;
-
-            try
-            {
-                var openFileDialog = new Microsoft.Win32.OpenFileDialog
-                {
-                    Filter = "Base de Datos SQLite (*.db)|*.db",
-                    Title = "Seleccionar Base de Datos para Importar"
-                };
-
-                if (openFileDialog.ShowDialog() == true)
-                {
-                    var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                    string destPath = System.IO.Path.Combine(localAppData, "BakeryPOS", "bakery_pos.db");
-
-                    // 1. Cerrar conexión actual para liberar el archivo
-                    _context.Database.CloseConnection();
-                    _context.Dispose();
-
-                    // 2. Sobreescribir el archivo
-                    System.IO.File.Copy(openFileDialog.FileName, destPath, true);
-
-                    System.Windows.MessageBox.Show("Base de datos importada correctamente. El sistema se cerrará para aplicar los cambios.", "Importación Exitosa", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
-                    
-                    // 3. Reiniciar la aplicación para recargar todo
-                    System.Windows.Application.Current.Shutdown();
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Windows.MessageBox.Show($"Error al importar: {ex.Message}\n\nSi el error persiste, asegúrate de que el archivo no esté abierto en otro programa.", "Error de Importación", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
     }

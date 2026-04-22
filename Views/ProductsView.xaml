@@ -15,45 +15,64 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <StackPanel Orientation="Horizontal" Margin="0,0,0,20" Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}">
-            <StackPanel Margin="0,0,10,0">
-                <TextBlock Text="Código:" FontSize="12" Foreground="Gray"/>
-                <TextBox x:Name="CodeInput" Text="{Binding NewProductCode, UpdateSourceTrigger=PropertyChanged}" Width="80" TabIndex="1"/>
-            </StackPanel>
-
-            <StackPanel Margin="0,0,10,0">
-                <TextBlock Text="Nombre:" FontSize="12" Foreground="Gray"/>
-                <TextBox Text="{Binding NewProductName, UpdateSourceTrigger=PropertyChanged}" Width="150" TabIndex="2"/>
-            </StackPanel>
-            
-            <StackPanel Margin="0,0,10,0">
-                <TextBlock Text="Precio:" FontSize="12" Foreground="Gray"/>
-                <TextBox Text="{Binding NewProductPrice, UpdateSourceTrigger=PropertyChanged}" Width="80" TabIndex="3"/>
-            </StackPanel>
-
-            <Button Content="Agregar Producto" Command="{Binding AddProductCommand}" IsDefault="True" VerticalAlignment="Bottom" Height="30" Padding="15,0" Background="#10B981" Foreground="White" BorderThickness="0" FontWeight="Bold" TabIndex="4"/>
-
-            <Separator Width="1" Height="25" Margin="20,0" Background="#E2E8F0" VerticalAlignment="Bottom"/>
-
-            <Button Command="{Binding ExportDatabaseCommand}" Background="#6366F1" Foreground="White" BorderThickness="0" Padding="10,0" Height="30" VerticalAlignment="Bottom" Margin="0,0,10,0" ToolTip="Exportar Base de Datos (.db)">
+        <Grid Grid.Row="0" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Catálogo e Inventario" FontSize="24" FontWeight="Bold" Foreground="#1F2937"/>
+            <Button Grid.Column="1" Command="{Binding ExportToExcelCommand}" Background="#10B981" Foreground="White" BorderThickness="0" Padding="15,8" Cursor="Hand">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="8"/>
+                    </Style>
+                </Button.Resources>
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="💾" Margin="0,0,5,0"/>
-                    <TextBlock Text="Exportar DB" FontWeight="SemiBold"/>
+                    <TextBlock Text="📊" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="Exportar Inventario a Excel" FontWeight="Bold" VerticalAlignment="Center"/>
                 </StackPanel>
             </Button>
+        </Grid>
 
-            <Button Command="{Binding ImportDatabaseCommand}" Background="#F59E0B" Foreground="White" BorderThickness="0" Padding="10,0" Height="30" VerticalAlignment="Bottom" ToolTip="Importar Base de Datos (.db)">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="📂" Margin="0,0,5,0"/>
-                    <TextBlock Text="Importar DB" FontWeight="SemiBold"/>
+        <Border Grid.Row="1" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="15" Margin="0,0,0,20" Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/> <!-- Código -->
+                    <ColumnDefinition Width="*"/>    <!-- Nombre (Flexible) -->
+                    <ColumnDefinition Width="Auto"/> <!-- Precio -->
+                    <ColumnDefinition Width="Auto"/> <!-- Botón -->
+                </Grid.ColumnDefinitions>
+                
+                <StackPanel Margin="0,0,15,0">
+                    <TextBlock Text="CÓDIGO" FontSize="10" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,5"/>
+                    <TextBox x:Name="CodeInput" Text="{Binding NewProductCode, UpdateSourceTrigger=PropertyChanged}" Width="100" Height="35" VerticalContentAlignment="Center" Padding="8,0" TabIndex="1"/>
                 </StackPanel>
-            </Button>
-        </StackPanel>
 
-        <DataGrid Grid.Row="1" ItemsSource="{Binding Products}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionMode="Single" BeginningEdit="ProductsGrid_BeginningEdit">
+                <StackPanel Grid.Column="1" Margin="0,0,15,0">
+                    <TextBlock Text="NOMBRE DEL PRODUCTO" FontSize="10" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,5"/>
+                    <TextBox Text="{Binding NewProductName, UpdateSourceTrigger=PropertyChanged}" Height="35" VerticalContentAlignment="Center" Padding="8,0" TabIndex="2"/>
+                </StackPanel>
+                
+                <StackPanel Grid.Column="2" Margin="0,0,15,0">
+                    <TextBlock Text="PRECIO" FontSize="10" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,5"/>
+                    <TextBox Text="{Binding NewProductPrice, UpdateSourceTrigger=PropertyChanged}" Width="100" Height="35" VerticalContentAlignment="Center" Padding="8,0" TabIndex="3"/>
+                </StackPanel>
+
+                <Button Grid.Column="3" Content="+ AGREGAR PRODUCTO" Command="{Binding AddProductCommand}" IsDefault="True" VerticalAlignment="Bottom" Height="35" Padding="20,0" Background="#10B981" Foreground="White" BorderThickness="0" FontWeight="Bold" TabIndex="4">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="6"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+            </Grid>
+        </Border>
+
+        <DataGrid Grid.Row="2" ItemsSource="{Binding Products}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionMode="Single" BeginningEdit="ProductsGrid_BeginningEdit">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50" IsReadOnly="True"/>
                 <DataGridTextColumn Header="Código" Binding="{Binding Code}" Width="80"/>
