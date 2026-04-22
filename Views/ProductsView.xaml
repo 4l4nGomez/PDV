@@ -35,6 +35,22 @@
             </StackPanel>
 
             <Button Content="Agregar Producto" Command="{Binding AddProductCommand}" IsDefault="True" VerticalAlignment="Bottom" Height="30" Padding="15,0" Background="#10B981" Foreground="White" BorderThickness="0" FontWeight="Bold" TabIndex="4"/>
+
+            <Separator Width="1" Height="25" Margin="20,0" Background="#E2E8F0" VerticalAlignment="Bottom"/>
+
+            <Button Command="{Binding ExportDatabaseCommand}" Background="#6366F1" Foreground="White" BorderThickness="0" Padding="10,0" Height="30" VerticalAlignment="Bottom" Margin="0,0,10,0" ToolTip="Exportar Base de Datos (.db)">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="💾" Margin="0,0,5,0"/>
+                    <TextBlock Text="Exportar DB" FontWeight="SemiBold"/>
+                </StackPanel>
+            </Button>
+
+            <Button Command="{Binding ImportDatabaseCommand}" Background="#F59E0B" Foreground="White" BorderThickness="0" Padding="10,0" Height="30" VerticalAlignment="Bottom" ToolTip="Importar Base de Datos (.db)">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="📂" Margin="0,0,5,0"/>
+                    <TextBlock Text="Importar DB" FontWeight="SemiBold"/>
+                </StackPanel>
+            </Button>
         </StackPanel>
 
         <DataGrid Grid.Row="1" ItemsSource="{Binding Products}" AutoGenerateColumns="False" CanUserAddRows="False" SelectionMode="Single" BeginningEdit="ProductsGrid_BeginningEdit">

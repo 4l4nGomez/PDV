@@ -47,7 +47,9 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             
-            <TabControl x:Name="MainTabControl" Grid.Row="0" BorderThickness="0" Background="Transparent" SelectionChanged="MainTabControl_SelectionChanged">
+            <TabControl x:Name="MainTabControl" Grid.Row="0" BorderThickness="0" Background="Transparent" 
+                        SelectedIndex="{Binding SelectedTabIndex}"
+                        SelectionChanged="MainTabControl_SelectionChanged">
                 <TabItem Header="Corte de Efectivo" FontSize="16" Padding="15,5">
                     <Grid Background="White" Margin="0,10,0,0">
                         <Grid.RowDefinitions>
@@ -105,7 +107,7 @@
                                         </Grid.ColumnDefinitions>
                                         <StackPanel Margin="0,0,10,0">
                                             <TextBlock Text="Monto:" FontSize="12" Foreground="#6B7280" Margin="0,0,0,5"/>
-                                            <TextBox Text="{Binding MovementAmount, UpdateSourceTrigger=PropertyChanged}" Height="35" Padding="5" VerticalContentAlignment="Center"/>
+                                            <TextBox Text="{Binding MovementAmountText, UpdateSourceTrigger=PropertyChanged}" Height="35" Padding="5" VerticalContentAlignment="Center"/>
                                         </StackPanel>
                                         <StackPanel Grid.Column="1">
                                             <TextBlock Text="Concepto:" FontSize="12" Foreground="#6B7280" Margin="0,0,0,5"/>
@@ -123,7 +125,7 @@
                                 <StackPanel>
                                     <TextBlock Text="Cierre de Caja" FontSize="16" FontWeight="Bold" Foreground="#1E40AF" Margin="0,0,0,15"/>
                                     <TextBlock Text="Dinero real en cajón:" FontSize="12" Foreground="#6B7280" Margin="0,0,0,5"/>
-                                    <TextBox Text="{Binding ActualCash, UpdateSourceTrigger=PropertyChanged}" FontSize="32" FontWeight="Bold" Height="55" Padding="5" BorderThickness="1" BorderBrush="#BFDBFE" TextAlignment="Center" Margin="0,0,0,15"/>
+                                    <TextBox Text="{Binding ActualCashText, UpdateSourceTrigger=PropertyChanged}" FontSize="32" FontWeight="Bold" Height="55" Padding="5" BorderThickness="1" BorderBrush="#BFDBFE" TextAlignment="Center" Margin="0,0,0,15"/>
                                     
                                     <Grid Margin="0,0,0,15">
                                         <TextBlock Text="Diferencia:" FontSize="16" VerticalAlignment="Center"/>

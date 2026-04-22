@@ -45,6 +45,8 @@ namespace BakeryPOS.ViewModels
         [ObservableProperty]
         private SaleItem _selectedTicketItem;
 
+        public string CurrentUsername => AppSession.CurrentUser?.Username ?? "Invitado";
+
         public decimal CashReceivedNum
         {
             get

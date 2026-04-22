@@ -27,7 +27,16 @@ namespace BakeryPOS.ViewModels
 
         private System.Windows.Threading.DispatcherTimer _timer;
         private System.Windows.Threading.DispatcherTimer _shiftMonitorTimer;
+        private System.Windows.Threading.DispatcherTimer _autoBackupTimer;
+        
+        // ViewModels persistentes para mantener el estado
         private PosViewModel _posViewModel;
+        private ShiftsViewModel _shiftsViewModel;
+        private ProductsViewModel _productsViewModel;
+        private ProductionViewModel _productionViewModel;
+        private ReportsViewModel _reportsViewModel;
+        private UsersViewModel _usersViewModel;
+        private SettingsViewModel _settingsViewModel;
 
         public bool IsAdmin => AppSession.IsAdmin;
         public bool IsCashier => AppSession.IsCashier;
@@ -39,6 +48,43 @@ namespace BakeryPOS.ViewModels
             ShowLogin();
             StartClock();
             StartShiftMonitor();
+            StartAutoBackup();
+        }
+
+        private void StartAutoBackup()
+        {
+            _autoBackupTimer = new System.Windows.Threading.DispatcherTimer
+            {
+                Interval = System.TimeSpan.FromMinutes(30)
+            };
+            _autoBackupTimer.Tick += (s, e) => AutoBackupDatabase();
+            _autoBackupTimer.Start();
+        }
+
+        private void AutoBackupDatabase()
+        {
+            try
+            {
+                var localAppData = System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData);
+                string sourceDb = System.IO.Path.Join(localAppData, "BakeryPOS", "bakery_pos.db");
+                
+                var myDocuments = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
+                string backupFolder = System.IO.Path.Join(myDocuments, "BakeryPOS_Backups", "Automaticas");
+                System.IO.Directory.CreateDirectory(backupFolder);
+
+                string destDb = System.IO.Path.Join(backupFolder, $"bakery_pos_auto_{System.DateTime.Now:yyyyMMdd_HHmm}.db");
+                
+                if (System.IO.File.Exists(sourceDb))
+                {
+                    System.IO.File.Copy(sourceDb, destDb, overwrite: true);
+                    
+                    // Opcional: Limpiar copias muy antiguas para no saturar el disco (mantener últimas 50)
+                    var files = new System.IO.DirectoryInfo(backupFolder).GetFiles("*.db")
+                                    .OrderByDescending(f => f.CreationTime).Skip(50);
+                    foreach (var file in files) file.Delete();
+                }
+            }
+            catch { /* Ignorar errores silenciosos en backup automático para no molestar al usuario */ }
         }
 
         // Comandos globales que delegan en el PosViewModel para mantener atajos funcionales
@@ -123,7 +169,16 @@ namespace BakeryPOS.ViewModels
         {
             IsLoggedIn = false;
             HasActiveShift = false;
-            _posViewModel = null; // Limpiar estado del POS al ir al login
+            
+            // Limpiar estados de todos los ViewModels al cerrar sesión
+            _posViewModel = null;
+            _shiftsViewModel = null;
+            _productsViewModel = null;
+            _productionViewModel = null;
+            _reportsViewModel = null;
+            _usersViewModel = null;
+            _settingsViewModel = null;
+
             CurrentSection = "Ingreso";
             WindowTitle = "Bakery POS - Iniciar Sesión";
             var loginVm = new LoginViewModel();
@@ -158,7 +213,6 @@ namespace BakeryPOS.ViewModels
             if (result == System.Windows.MessageBoxResult.Yes)
             {
                 AppSession.CurrentUser = null;
-                _posViewModel = null; // Limpiar carrito al cerrar sesión
                 ShowLogin();
             }
         }
@@ -167,7 +221,16 @@ namespace BakeryPOS.ViewModels
         private void NavigateToProducts()
         {
             if (!CheckShift()) return;
-            CurrentView = new ProductsViewModel();
+            if (_productsViewModel == null)
+            {
+                _productsViewModel = new ProductsViewModel();
+            }
+            else
+            {
+                // Refrescar productos en el catálogo
+                _productsViewModel.LoadData();
+            }
+            CurrentView = _productsViewModel;
             CurrentSection = "Catálogo";
             WindowTitle = "Bakery POS - Catálogo de Productos";
         }
@@ -176,7 +239,16 @@ namespace BakeryPOS.ViewModels
         private void NavigateToProduction()
         {
             if (!CheckShift()) return;
-            CurrentView = new ProductionViewModel();
+            if (_productionViewModel == null)
+            {
+                _productionViewModel = new ProductionViewModel();
+            }
+            else
+            {
+                // Refrescar productos en producción (SOLUCIONA EL PROBLEMA DEL USUARIO)
+                _productionViewModel.LoadData();
+            }
+            CurrentView = _productionViewModel;
             CurrentSection = "Producción";
             WindowTitle = "Bakery POS - Producción de Pan";
         }
@@ -193,7 +265,7 @@ namespace BakeryPOS.ViewModels
             }
             else
             {
-                // Refrescar productos disponibles (por si se agregaron/quitaron o cambió el stock fuera del POS)
+                // Refrescar productos disponibles
                 _posViewModel.LoadData();
             }
 
@@ -205,7 +277,16 @@ namespace BakeryPOS.ViewModels
         [RelayCommand]
         private void NavigateToShifts()
         {
-            CurrentView = new ShiftsViewModel();
+            if (_shiftsViewModel == null)
+            {
+                _shiftsViewModel = new ShiftsViewModel();
+            }
+            else
+            {
+                // Refrescar estado del turno y productos en auditoría
+                _shiftsViewModel.LoadData();
+            }
+            CurrentView = _shiftsViewModel;
             CurrentSection = "Turnos y Caja";
             WindowTitle = "Bakery POS - Turnos y Corte de Caja";
         }
@@ -215,7 +296,16 @@ namespace BakeryPOS.ViewModels
         {
             if (!IsAdmin) return;
             if (!CheckShift()) return;
-            CurrentView = new ReportsViewModel();
+            if (_reportsViewModel == null)
+            {
+                _reportsViewModel = new ReportsViewModel();
+            }
+            else
+            {
+                // Refrescar reportes (ventas, movimientos y auditorías)
+                _reportsViewModel.LoadData();
+            }
+            CurrentView = _reportsViewModel;
             CurrentSection = "Reportes";
             WindowTitle = "Bakery POS - Reportes de Ventas";
         }
@@ -225,7 +315,8 @@ namespace BakeryPOS.ViewModels
         {
             if (!IsAdmin) return;
             if (!CheckShift()) return;
-            CurrentView = new UsersViewModel();
+            if (_usersViewModel == null) _usersViewModel = new UsersViewModel();
+            CurrentView = _usersViewModel;
             CurrentSection = "Gestión de Usuarios";
             WindowTitle = "Bakery POS - Gestión de Usuarios";
         }
@@ -234,7 +325,8 @@ namespace BakeryPOS.ViewModels
         private void NavigateToSettings()
         {
             if (!IsAdmin) return;
-            CurrentView = new SettingsViewModel();
+            if (_settingsViewModel == null) _settingsViewModel = new SettingsViewModel();
+            CurrentView = _settingsViewModel;
             CurrentSection = "Ajustes";
             WindowTitle = "Bakery POS - Ajustes del Sistema";
         }

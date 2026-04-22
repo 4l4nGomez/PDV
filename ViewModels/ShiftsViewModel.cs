@@ -40,14 +40,20 @@ namespace BakeryPOS.ViewModels
         private decimal _totalExpenses;
         [ObservableProperty]
         private decimal _expectedCash;
+        
         [ObservableProperty]
-        private decimal _actualCash;
+        private string _actualCashText = "0";
+
         [ObservableProperty]
         private decimal _cashDifference;
         
+        [ObservableProperty]
+        private int _selectedTabIndex;
+        
         // Propiedades de Movimientos
         [ObservableProperty]
-        private decimal _movementAmount;
+        private string _movementAmountText = "0";
+
         [ObservableProperty]
         private string _movementDescription;
         
@@ -69,8 +75,16 @@ namespace BakeryPOS.ViewModels
             LoadActiveShift();
         }
 
+        public void LoadData()
+        {
+            LoadActiveShift();
+        }
+
         private void LoadActiveShift()
         {
+            // Forzar recarga de entidades para ver cambios de otros ViewModels
+            _context.ChangeTracker.Entries().ToList().ForEach(e => e.Reload());
+
             ActiveShift = _context.Shifts.FirstOrDefault(s => !s.IsClosed);
             HasActiveShift = ActiveShift != null;
 
@@ -108,15 +122,21 @@ namespace BakeryPOS.ViewModels
         [RelayCommand]
         private void AddMovement(string type)
         {
-            if (ActiveShift == null || MovementAmount <= 0) return;
-            
+            // Parsear el monto de forma segura
+            string cleanAmount = (MovementAmountText ?? "0").Replace(",", ".");
+            if (ActiveShift == null || !decimal.TryParse(cleanAmount, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal amount) || amount <= 0) 
+            {
+                System.Windows.MessageBox.Show("Por favor, ingrese un monto válido mayor a 0.", "Monto Inválido", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                return;
+            }
+
             bool isInflow = type == "IN";
 
             var movement = new CashMovement
             {
                 ShiftId = ActiveShift.Id,
                 UserId = AppSession.CurrentUser.Id,
-                Amount = isInflow ? MovementAmount : -MovementAmount,
+                Amount = isInflow ? amount : -amount,
                 Description = MovementDescription ?? (isInflow ? "Ingreso" : "Gasto"),
                 MovementDate = DateTime.Now
             };
@@ -124,13 +144,13 @@ namespace BakeryPOS.ViewModels
             _context.CashMovements.Add(movement);
             _context.SaveChanges();
 
-            MovementAmount = 0;
+            MovementAmountText = "0";
             MovementDescription = string.Empty;
 
             CalculateCloseMetrics(); // Recalculate totals
         }
 
-        private void CalculateCloseMetrics()
+        public void CalculateCloseMetrics()
         {
             // Sumar todas las ventas atadas a este turno
             TotalSalesAmount = _context.Sales.Where(s => s.ShiftId == ActiveShift.Id).Sum(s => s.TotalAmount);
@@ -152,23 +172,12 @@ namespace BakeryPOS.ViewModels
                 Name = p.Name, 
                 UnitPrice = p.Price,
                 TheoreticalStock = p.Stock, 
-                PhysicalStock = p.Stock 
+                PhysicalStock = 0 // SIEMPRE 0 al cargar
             }).ToList();
 
-            // Aplicar valores guardados si existen para hoy
+            // Vincular eventos de cambio para actualizar totales
             foreach(var item in auditItems)
             {
-                var rec = daily.FirstOrDefault(d => d.ProductId == item.ProductId);
-                if (rec != null)
-                {
-                    // If the DB stored null, fall back to theoretical stock
-                    item.PhysicalStock = rec.PhysicalStock ?? item.TheoreticalStock;
-                }
-                else
-                {
-                    item.PhysicalStock = item.TheoreticalStock;
-                }
-
                 item.PropertyChanged += (s, e) => {
                     if (e.PropertyName == nameof(ProductAudit.PhysicalStock))
                         UpdateAuditTotals();
@@ -222,49 +231,95 @@ namespace BakeryPOS.ViewModels
         {
             if (InventoryAudit == null) return;
 
-            var today = DateTime.Today;
+            var now = DateTime.Now;
+            bool anyChange = false;
 
             foreach (var item in InventoryAudit)
             {
-                var existing = _context.DailyInventoryAudits.FirstOrDefault(d => d.Date == today && d.ProductId == item.ProductId);
-                if (existing == null)
+                // Solo registramos si el usuario ingresó un número (conteo físico > 0)
+                // o si hay una diferencia que requiere ajuste.
+                if (item.PhysicalStock == 0 && item.TheoreticalStock == 0) continue;
+                if (item.PhysicalStock == 0 && item.TheoreticalStock != 0)
                 {
-                    existing = new Models.DailyInventoryAudit
+                    // Si el usuario dejó en 0 pero había stock, preguntamos o asumimos que es 0 real
+                    // Para este sistema, asumiremos que 0 es un conteo válido.
+                }
+
+                var product = _context.Products.Find(item.ProductId);
+                if (product != null)
+                {
+                    int diff = item.PhysicalStock - product.Stock;
+                    
+                    // Crear SIEMPRE un nuevo registro para el historial
+                    var newRecord = new Models.DailyInventoryAudit
                     {
-                        Date = today,
+                        Date = now, // Hora exacta
                         ProductId = item.ProductId,
                         PhysicalStock = item.PhysicalStock,
-                        UserId = AppSession.CurrentUser?.Id ?? 0
+                        UserId = AppSession.CurrentUser?.Id ?? 0,
+                        Note = diff == 0 ? "Conteo: Correcto" : $"Ajuste: {(diff > 0 ? "+" : "")}{diff} pzas (Antes: {product.Stock})"
                     };
-                    _context.DailyInventoryAudits.Add(existing);
-                }
-                else
-                {
-                    existing.PhysicalStock = item.PhysicalStock;
-                    existing.UserId = AppSession.CurrentUser?.Id ?? existing.UserId;
+                    
+                    _context.DailyInventoryAudits.Add(newRecord);
+
+                    // Actualizar el stock real del producto
+                    product.Stock = item.PhysicalStock;
+                    item.TheoreticalStock = item.PhysicalStock;
+                    anyChange = true;
                 }
             }
 
-            _context.SaveChanges();
-            System.Windows.MessageBox.Show("Auditoría guardada correctamente.", "Éxito", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            if (anyChange)
+            {
+                _context.SaveChanges();
+                
+                // Resetear a 0 para el siguiente conteo limpio
+                foreach (var item in InventoryAudit)
+                {
+                    item.PhysicalStock = 0;
+                }
+                UpdateAuditTotals();
+
+                System.Windows.MessageBox.Show("Cambios aplicados y registrados en el historial de reportes.", "Éxito", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            }
         }
 
-        partial void OnActualCashChanged(decimal value)
+        private void PrintAuditReport()
         {
-            CashDifference = value - ExpectedCash;
+            // Método desactivado a petición del usuario
+        }
+
+        partial void OnActualCashTextChanged(string value)
+        {
+            string cleanCash = (value ?? "0").Replace(",", ".");
+            if (decimal.TryParse(cleanCash, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal actual))
+            {
+                CashDifference = actual - ExpectedCash;
+            }
             CloseShiftCommand.NotifyCanExecuteChanged();
         }
 
-        private bool CanPerformCut() => ActualCash > 0;
+        private bool CanPerformCut() 
+        {
+            string cleanCash = (ActualCashText ?? "0").Replace(",", ".");
+            return decimal.TryParse(cleanCash, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal actual) && actual > 0;
+        }
 
         [RelayCommand(CanExecute = nameof(CanPerformCut))]
         private void CloseShift()
         {
             if (ActiveShift == null) return;
 
+            string cleanCash = (ActualCashText ?? "0").Replace(",", ".");
+            if (!decimal.TryParse(cleanCash, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal actualCash))
+            {
+                System.Windows.MessageBox.Show("El monto de cierre no es válido.", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                return;
+            }
+
             ActiveShift.EndTime = DateTime.Now;
             ActiveShift.ExpectedEndingCash = ExpectedCash;
-            ActiveShift.ActualEndingCash = ActualCash;
+            ActiveShift.ActualEndingCash = actualCash;
             
             // Persist snapshots
             ActiveShift.TotalSales = TotalSalesAmount;
@@ -278,17 +333,12 @@ namespace BakeryPOS.ViewModels
 
             ActiveShift.IsClosed = true;
 
-            foreach (var item in InventoryAudit)
-            {
-                var p = _context.Products.Find(item.ProductId);
-                if (p != null) p.Stock = item.PhysicalStock;
-            }
-
             _context.SaveChanges();
             
             // Backup Database on close
             BackupDatabase();
 
+            ActualCashText = "0";
             LoadActiveShift(); 
 
             // Notify MainViewModel

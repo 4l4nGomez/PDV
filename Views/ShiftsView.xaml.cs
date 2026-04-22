@@ -26,26 +26,31 @@ namespace BakeryPOS.Views
 
         private void MainTabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            // Evitar que el evento se dispare por cambios en controles internos (como ComboBoxes si los hubiera)
+            if (e.OriginalSource != MainTabControl) return;
+
             if (MainTabControl.SelectedItem is TabItem tab)
             {
                 var header = tab.Header as string ?? string.Empty;
                 if (header.Contains("Auditoría") || header.Contains("Auditoria") || header.Contains("Conteo Físico"))
                 {
-                    FocusFirstPhysicalCell();
+                    FocusAuditCell();
                 }
             }
         }
 
-        private void FocusFirstPhysicalCell()
+        private void FocusAuditCell()
         {
             try
             {
                 if (AuditDataGrid == null) return;
                 if (AuditDataGrid.Items.Count == 0) return;
 
-                var firstItem = AuditDataGrid.Items[0];
-                AuditDataGrid.SelectedItem = firstItem;
-                AuditDataGrid.ScrollIntoView(firstItem);
+                // Intentar usar el ítem seleccionado, si no, usar el primero
+                var itemToFocus = AuditDataGrid.SelectedItem ?? AuditDataGrid.Items[0];
+                
+                AuditDataGrid.SelectedItem = itemToFocus;
+                AuditDataGrid.ScrollIntoView(itemToFocus);
                 AuditDataGrid.UpdateLayout();
 
                 // Physical column index is 2 (0:Name,1:Theoretical,2:Physical)
@@ -53,17 +58,19 @@ namespace BakeryPOS.Views
                 if (AuditDataGrid.Columns.Count <= colIndex) return;
 
                 var column = AuditDataGrid.Columns[colIndex];
-                AuditDataGrid.CurrentCell = new DataGridCellInfo(firstItem, column);
+                AuditDataGrid.CurrentCell = new DataGridCellInfo(itemToFocus, column);
                 AuditDataGrid.BeginEdit();
 
                 // Try to focus the TextBox inside the cell
-                var cellContent = column.GetCellContent(firstItem);
+                var cellContent = column.GetCellContent(itemToFocus);
                 if (cellContent != null)
                 {
                     var tb = FindDescendant<TextBox>(cellContent);
                     if (tb != null)
                     {
                         tb.Focus();
+                        // Solo seleccionar todo si es una celda nueva, para no molestar si el usuario ya estaba escribiendo
+                        // Pero como estamos volviendo de otra pestaña, select all suele ser deseable
                         tb.SelectAll();
                         return;
                     }

@@ -100,6 +100,9 @@
                                                     <RowDefinition Height="Auto"/>
                                                 </Grid.RowDefinitions>
                                                 <StackPanel Grid.Row="0" VerticalAlignment="Center">
+                                                    <Border Background="#F1F5F9" CornerRadius="4" Padding="4,1" HorizontalAlignment="Center" Margin="0,0,0,5">
+                                                        <TextBlock Text="{Binding Code}" FontSize="10" FontWeight="Bold" Foreground="#64748B"/>
+                                                    </Border>
                                                     <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="15" HorizontalAlignment="Center" 
                                                              TextAlignment="Center" TextWrapping="Wrap" MaxHeight="45" Foreground="{StaticResource SecondaryBrush}"/>
                                                     <TextBlock Text="{Binding Price, StringFormat=C}" FontWeight="Black" FontSize="22" 
@@ -136,8 +139,14 @@
                 <Border Background="{StaticResource PrimaryBrush}" Padding="15" CornerRadius="12,12,0,0" Focusable="False">
                     <Grid Focusable="False">
                         <StackPanel Orientation="Horizontal" Focusable="False">
-                            <TextBlock Text="🛒" FontSize="20" Margin="0,0,10,0"/>
-                            <TextBlock Text="Resumen de Venta" FontSize="18" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                            <TextBlock Text="🛒" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                            <StackPanel VerticalAlignment="Center" Focusable="False">
+                                <TextBlock Text="Resumen de Venta" FontSize="16" FontWeight="Bold" Foreground="White"/>
+                                <StackPanel Orientation="Horizontal" Focusable="False">
+                                    <TextBlock Text="Cajero: " FontSize="10" Foreground="White" Opacity="0.8"/>
+                                    <TextBlock Text="{Binding CurrentUsername}" FontSize="10" FontWeight="Bold" Foreground="White"/>
+                                </StackPanel>
+                            </StackPanel>
                         </StackPanel>
                         
                         <!-- Botón CANCELAR VENTA -->
@@ -200,8 +209,11 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel VerticalAlignment="Center" Margin="5,5,10,5">
-                                        <TextBlock Text="{Binding Product.Name}" FontWeight="Bold" FontSize="15" 
-                                                 Foreground="{StaticResource SecondaryBrush}" TextWrapping="Wrap"/>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Product.Code}" FontSize="10" FontWeight="Bold" Foreground="#94A3B8" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding Product.Name}" FontWeight="Bold" FontSize="15" 
+                                                     Foreground="{StaticResource SecondaryBrush}" TextWrapping="Wrap"/>
+                                        </StackPanel>
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="{Binding UnitPrice, StringFormat=C}" FontSize="11" 
                                                      Foreground="{StaticResource TextSecBrush}"/>

@@ -3,8 +3,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:BakeryPOS"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="1000">
+    <UserControl.Resources>
+        <local:StringContainsConverter x:Key="StringContainsConverter"/>
+    </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -12,20 +16,75 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Reportes de Ventas y Movimientos (Admin)" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+        <TextBlock Text="Resumen General de Operaciones" FontSize="24" FontWeight="Bold" Margin="0,0,0,20" Foreground="#1E293B"/>
 
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,20">
-            <TextBlock Text="Desde:" VerticalAlignment="Center" Margin="0,0,10,0"/>
-            <DatePicker SelectedDate="{Binding StartDate}" Width="150" Margin="0,0,20,0"/>
-            
-            <TextBlock Text="Hasta:" VerticalAlignment="Center" Margin="0,0,10,0"/>
-            <DatePicker SelectedDate="{Binding EndDate}" Width="150" Margin="0,0,20,0"/>
+        <Grid Grid.Row="1" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/> <!-- Filtros -->
+                <ColumnDefinition Width="*"/>    <!-- Tarjetas -->
+            </Grid.ColumnDefinitions>
 
-            <Button Content="Filtrar Reporte" Command="{Binding LoadDataCommand}" Padding="15,5" Background="#6366F1" Foreground="White" BorderThickness="0" FontWeight="Bold"/>
-            
-            <TextBlock Text="Ventas Totales: " VerticalAlignment="Center" Margin="40,0,5,0" FontSize="18"/>
-            <TextBlock Text="{Binding TotalSales, StringFormat=C}" VerticalAlignment="Center" FontSize="18" FontWeight="Bold" Foreground="#10B981"/>
-        </StackPanel>
+            <!-- Panel de Filtros -->
+            <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Padding="15" Margin="0,0,15,0">
+                <StackPanel Orientation="Horizontal">
+                    <StackPanel Margin="0,0,15,0">
+                        <TextBlock Text="DESDE" FontSize="10" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,5"/>
+                        <DatePicker SelectedDate="{Binding StartDate}" Width="130"/>
+                    </StackPanel>
+                    
+                    <StackPanel Margin="0,0,15,0">
+                        <TextBlock Text="HASTA" FontSize="10" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,5"/>
+                        <DatePicker SelectedDate="{Binding EndDate}" Width="130"/>
+                    </StackPanel>
+
+                    <StackPanel Margin="0,0,15,0">
+                        <TextBlock Text="USUARIO" FontSize="10" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,5"/>
+                        <ComboBox ItemsSource="{Binding Users}" SelectedItem="{Binding SelectedUser}" DisplayMemberPath="Username" Width="130"/>
+                    </StackPanel>
+
+                    <Button Command="{Binding LoadDataCommand}" Background="#6366F1" Width="45" Height="40" VerticalAlignment="Bottom" Cursor="Hand">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}" CornerRadius="8">
+                                    <TextBlock Text="🔄" Foreground="White" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </StackPanel>
+            </Border>
+
+            <!-- Panel de Métricas Dinámicas -->
+            <UniformGrid Grid.Column="1" Columns="4">
+                <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Padding="12" Margin="5">
+                    <StackPanel>
+                        <TextBlock Text="VENTAS TOTALES" FontSize="10" FontWeight="Bold" Foreground="#64748B"/>
+                        <TextBlock Text="{Binding TotalSales, StringFormat=C}" FontSize="22" FontWeight="Black" Foreground="#1E293B" Margin="0,5,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="#ECFDF5" BorderBrush="#A7F3D0" BorderThickness="1" CornerRadius="12" Padding="12" Margin="5">
+                    <StackPanel>
+                        <TextBlock Text="INGRESOS (+)" FontSize="10" FontWeight="Bold" Foreground="#059669"/>
+                        <TextBlock Text="{Binding TotalInflows, StringFormat=C}" FontSize="22" FontWeight="Black" Foreground="#059669" Margin="0,5,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="#FEF2F2" BorderBrush="#FECACA" BorderThickness="1" CornerRadius="12" Padding="12" Margin="5">
+                    <StackPanel>
+                        <TextBlock Text="GASTOS (-)" FontSize="10" FontWeight="Bold" Foreground="#991B1B"/>
+                        <TextBlock Text="{Binding TotalExpenses, StringFormat=C}" FontSize="22" FontWeight="Black" Foreground="#DC2626" Margin="0,5,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="#EEF2FF" BorderBrush="#C7D2FE" BorderThickness="1" CornerRadius="12" Padding="12" Margin="5">
+                    <StackPanel>
+                        <TextBlock Text="BALANCE NETO" FontSize="10" FontWeight="Bold" Foreground="#4338CA"/>
+                        <TextBlock Text="{Binding NetBalance, StringFormat=C}" FontSize="22" FontWeight="Black" Foreground="#4338CA" Margin="0,5,0,0"/>
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+        </Grid>
 
         <TabControl Grid.Row="2">
             <TabItem Header="Ventas Detalladas">
@@ -38,6 +97,44 @@
                         <DataGridTextColumn Header="Total" Binding="{Binding TotalAmount, StringFormat=C}" Width="100" FontWeight="Bold"/>
                     </DataGrid.Columns>
                 </DataGrid>
+            </TabItem>
+
+            <TabItem Header="📊 Análisis de Ventas">
+                <Grid Margin="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Top Productos -->
+                    <Border Grid.Column="0" Background="White" CornerRadius="12" Margin="5" Padding="15" BorderBrush="#E2E8F0" BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock Text="🏆 Productos Más Vendidos" FontSize="18" FontWeight="Bold" Margin="0,0,0,15" Foreground="#1E293B"/>
+                            <DataGrid ItemsSource="{Binding TopSellingProducts}" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True" Height="400">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Producto" Binding="{Binding ProductName}" Width="*"/>
+                                    <DataGridTextColumn Header="Cant." Binding="{Binding QuantitySold}" Width="60"/>
+                                    <DataGridTextColumn Header="Total" Binding="{Binding TotalRevenue, StringFormat=C}" Width="100" FontWeight="SemiBold"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Flujo por Horario -->
+                    <Border Grid.Column="1" Background="White" CornerRadius="12" Margin="5" Padding="15" BorderBrush="#E2E8F0" BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock Text="⏰ Flujo por Horario" FontSize="18" FontWeight="Bold" Margin="0,0,0,15" Foreground="#1E293B"/>
+                            <DataGrid ItemsSource="{Binding HourlySales}" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True" Height="400">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Hora" Binding="{Binding HourDisplay}" Width="80"/>
+                                    <DataGridTextColumn Header="Ventas" Binding="{Binding SaleCount}" Width="80"/>
+                                    <DataGridTextColumn Header="Recaudado" Binding="{Binding TotalRevenue, StringFormat=C}" Width="*"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <TextBlock Text="* Identifica tus 'horas pico' para optimizar personal" FontSize="11" Foreground="#64748B" Margin="0,10,0,0" FontStyle="Italic"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
             </TabItem>
             
             <TabItem Header="Cortes y Turnos">
@@ -61,6 +158,122 @@
                         <DataGridTextColumn Header="Usuario" Binding="{Binding User.Username}" Width="100"/>
                     </DataGrid.Columns>
                 </DataGrid>
+            </TabItem>
+
+            <TabItem Header="Auditoría de Inventario">
+                <Grid Background="#F3F4F6">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Tarjetas de Resumen de Auditoría -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="10">
+                        <Border Background="White" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="15" Margin="5" MinWidth="200">
+                            <StackPanel>
+                                <TextBlock Text="PIEZAS AJUSTADAS" FontSize="11" Foreground="#6B7280" FontWeight="Bold"/>
+                                <TextBlock Text="{Binding AuditTotalAdjustedPieces}" FontSize="24" FontWeight="Black" Foreground="#1F2937"/>
+                            </StackPanel>
+                        </Border>
+                        
+                        <Border Background="#FEF2F2" BorderBrush="#FECACA" BorderThickness="1" CornerRadius="8" Padding="15" Margin="5" MinWidth="200">
+                            <StackPanel>
+                                <TextBlock Text="PÉRDIDA ESTIMADA" FontSize="11" Foreground="#991B1B" FontWeight="Bold"/>
+                                <TextBlock Text="{Binding AuditTotalFinancialLoss, StringFormat=C}" FontSize="24" FontWeight="Black" Foreground="#DC2626"/>
+                            </StackPanel>
+                        </Border>
+                        
+                        <TextBlock Text="* Basado en el precio actual del producto" VerticalAlignment="Bottom" Margin="10,0,0,10" FontSize="10" Foreground="#9CA3AF" FontStyle="Italic"/>
+                    </StackPanel>
+
+                    <DataGrid Grid.Row="1" ItemsSource="{Binding Audits}" AutoGenerateColumns="False" 
+                              CanUserAddRows="False" IsReadOnly="True" GridLinesVisibility="None" 
+                              RowBackground="White" AlternatingRowBackground="#F8FAFC" 
+                              Margin="10,0,10,10" BorderThickness="1" BorderBrush="#E5E7EB">
+                        <DataGrid.Resources>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="#F9FAFB"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="Padding" Value="10,8"/>
+                                <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                <Setter Property="BorderBrush" Value="#E5E7EB"/>
+                            </Style>
+                        </DataGrid.Resources>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="FECHA" Binding="{Binding Date, StringFormat='dd/MM/yyyy'}" Width="100">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                        <Setter Property="Margin" Value="10,0"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Header="HORA" Binding="{Binding Date, StringFormat='HH:mm:ss'}" Width="80">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                        <Setter Property="Foreground" Value="#6B7280"/>
+                                        <Setter Property="HorizontalAlignment" Value="Center"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Header="PRODUCTO" Binding="{Binding Product.Name}" Width="220">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="FontWeight" Value="Bold"/>
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                        <Setter Property="Margin" Value="10,0"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Header="STOCK RESULTANTE" Binding="{Binding PhysicalStock}" Width="120">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="HorizontalAlignment" Value="Center"/>
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Header="MOVIMIENTO / DETALLES" Binding="{Binding Note}" Width="*">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                        <Setter Property="Margin" Value="10,0"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Note, ConverterParameter=Ajuste: -, Converter={StaticResource StringContainsConverter}}" Value="True">
+                                                <Setter Property="Foreground" Value="#DC2626"/>
+                                                <Setter Property="FontWeight" Value="Bold"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Note, ConverterParameter=Ajuste: +, Converter={StaticResource StringContainsConverter}}" Value="True">
+                                                <Setter Property="Foreground" Value="#059669"/>
+                                                <Setter Property="FontWeight" Value="Bold"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Note, ConverterParameter=Correcto, Converter={StaticResource StringContainsConverter}}" Value="True">
+                                                <Setter Property="Foreground" Value="#3B82F6"/>
+                                                <Setter Property="Opacity" Value="0.7"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Header="USUARIO" Binding="{Binding User.Username}" Width="110">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="HorizontalAlignment" Value="Center"/>
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                        <Setter Property="Foreground" Value="#6B7280"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
             </TabItem>
         </TabControl>
     </Grid>

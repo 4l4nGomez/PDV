@@ -6,6 +6,7 @@ using BakeryPOS.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace BakeryPOS.ViewModels
 {
@@ -26,12 +27,25 @@ namespace BakeryPOS.ViewModels
         private int _totalProduced;
     }
 
+    public partial class ProductionActivity : ObservableObject
+    {
+        public string Time { get; set; }
+        public string User { get; set; }
+        public string Action { get; set; } // "PRODUCCIÓN" o "MERMA"
+        public string Product { get; set; }
+        public int Quantity { get; set; }
+        public string Color { get; set; } // Para diferenciar visualmente
+    }
+
     public partial class ProductionViewModel : ObservableObject
     {
         private readonly AppDbContext _context;
 
         [ObservableProperty]
         private ObservableCollection<ProductDisplayItem> _products;
+
+        [ObservableProperty]
+        private ObservableCollection<ProductionActivity> _recentActivity;
 
         [ObservableProperty]
         private ProductDisplayItem _selectedProduct;
@@ -81,14 +95,19 @@ namespace BakeryPOS.ViewModels
         public ProductionViewModel()
         {
             _context = new AppDbContext();
-            LoadProducts();
+            LoadData();
         }
 
-        private void LoadProducts()
+        public void LoadData()
         {
+            _context.ChangeTracker.Entries().ToList().ForEach(e => e.Reload()); 
+            
+            var today = DateTime.Today;
             var dbProducts = _context.Products.ToList();
-            var shrinkages = _context.Shrinkages.ToList();
-            var productions = _context.ProductionLogs.ToList();
+            
+            // Traer registros de HOY para los totales de la lista
+            var shrinkagesToday = _context.Shrinkages.Where(s => s.Timestamp >= today).ToList();
+            var productionsToday = _context.ProductionLogs.Where(pr => pr.ProductionDate >= today).ToList();
 
             var displayItems = dbProducts.Select(p => new ProductDisplayItem
             {
@@ -97,11 +116,46 @@ namespace BakeryPOS.ViewModels
                 Name = p.Name,
                 Category = p.Category,
                 Stock = p.Stock,
-                TotalShrinkage = shrinkages.Where(s => s.ProductId == p.Id).Sum(s => s.Quantity),
-                TotalProduced = productions.Where(pr => pr.ProductId == p.Id).Sum(pr => pr.QuantityProduced)
+                TotalShrinkage = shrinkagesToday.Where(s => s.ProductId == p.Id).Sum(s => s.Quantity),
+                TotalProduced = productionsToday.Where(pr => pr.ProductId == p.Id).Sum(pr => pr.QuantityProduced)
             }).ToList();
 
             Products = new ObservableCollection<ProductDisplayItem>(displayItems);
+
+            // Cargar Bitácora de Actividad de HOY
+            var activity = new List<ProductionActivity>();
+
+            // Añadir producciones de hoy
+            activity.AddRange(_context.ProductionLogs
+                .Include(p => p.User)
+                .Include(p => p.Product)
+                .Where(p => p.ProductionDate >= today)
+                .OrderByDescending(p => p.ProductionDate)
+                .Select(p => new ProductionActivity {
+                    Time = p.ProductionDate.ToString("HH:mm"),
+                    User = p.User != null ? p.User.Username : "Sist.",
+                    Action = "HORNEADO",
+                    Product = p.Product != null ? p.Product.Name : "Desconocido",
+                    Quantity = p.QuantityProduced,
+                    Color = "#10B981" // Verde
+                }));
+
+            // Añadir mermas de hoy
+            activity.AddRange(_context.Shrinkages
+                .Include(s => s.User)
+                .Include(s => s.Product)
+                .Where(s => s.Timestamp >= today)
+                .OrderByDescending(s => s.Timestamp)
+                .Select(s => new ProductionActivity {
+                    Time = s.Timestamp.ToString("HH:mm"),
+                    User = s.User != null ? s.User.Username : "Sist.",
+                    Action = "MERMA",
+                    Product = s.Product != null ? s.Product.Name : "Desconocido",
+                    Quantity = s.Quantity,
+                    Color = "#EF4444" // Rojo
+                }));
+
+            RecentActivity = new ObservableCollection<ProductionActivity>(activity.OrderByDescending(a => a.Time));
         }
 
         private async Task ShowNotification(string message, bool isError = false)
@@ -156,7 +210,7 @@ namespace BakeryPOS.ViewModels
                 ProductionSearchCode = string.Empty;
                 SelectedProduct = null;
                 
-                LoadProducts();
+                LoadData();
                 await ShowNotification("Producción registrada");
             }
             catch (Exception)
@@ -207,7 +261,7 @@ namespace BakeryPOS.ViewModels
                 ShrinkageSearchCode = string.Empty;
                 SelectedShrinkageProduct = null;
                 
-                LoadProducts();
+                LoadData();
                 await ShowNotification("Merma registrada");
             }
             catch (Exception)
