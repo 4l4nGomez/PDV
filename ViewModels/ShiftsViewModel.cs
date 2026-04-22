@@ -5,6 +5,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
+using System.IO;
 
 namespace BakeryPOS.ViewModels
 {
@@ -106,8 +107,35 @@ namespace BakeryPOS.ViewModels
                 IsClosed = false
             };
 
-            _context.Shifts.Add(newShift);
-            _context.SaveChanges();
+            using (var tx = _context.Database.BeginTransaction())
+            {
+                try
+                {
+                    _context.Shifts.Add(newShift);
+                    _context.SaveChanges();
+
+                    // Audit
+                    try
+                    {
+                        var audit = new Audit { UserId = AppSession.CurrentUser?.Id ?? 0, Action = "OpenShift", Entity = "Shift", Data = $"ShiftId:{newShift.Id};StartingCash:{newShift.StartingCash}", Timestamp = DateTime.Now, ShiftId = newShift.Id };
+                        _context.Audits.Add(audit);
+                        _context.SaveChanges();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Log("Failed to write audit for OpenShift", ex);
+                    }
+
+                    tx.Commit();
+                }
+                catch (Exception ex)
+                {
+                    try { tx.Rollback(); } catch { }
+                    Logger.Log("Failed to open shift", ex);
+                    System.Windows.MessageBox.Show("No se pudo abrir el turno: " + ex.Message, "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                    return;
+                }
+            }
 
             StartingCash = 0;
             LoadActiveShift();
@@ -141,8 +169,35 @@ namespace BakeryPOS.ViewModels
                 MovementDate = DateTime.Now
             };
 
-            _context.CashMovements.Add(movement);
-            _context.SaveChanges();
+        using (var tx = _context.Database.BeginTransaction())
+            {
+                try
+                {
+                    _context.CashMovements.Add(movement);
+                    _context.SaveChanges();
+
+                    // Audit
+                    try
+                    {
+                        var audit = new Audit { UserId = AppSession.CurrentUser?.Id ?? 0, Action = "AddMovement", Entity = "CashMovement", Data = $"Amount:{movement.Amount};Desc:{movement.Description}", Timestamp = DateTime.Now, ShiftId = ActiveShift.Id };
+                        _context.Audits.Add(audit);
+                        _context.SaveChanges();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Log("Failed to write audit for AddMovement", ex);
+                    }
+
+                    tx.Commit();
+                }
+                catch (Exception ex)
+                {
+                    try { tx.Rollback(); } catch { }
+                    Logger.Log("Failed to add cash movement", ex);
+                    System.Windows.MessageBox.Show("No se pudo registrar el movimiento: " + ex.Message, "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                    return;
+                }
+            }
 
             MovementAmountText = "0";
             MovementDescription = string.Empty;
@@ -234,53 +289,78 @@ namespace BakeryPOS.ViewModels
             var now = DateTime.Now;
             bool anyChange = false;
 
-            foreach (var item in InventoryAudit)
+            using (var tx = _context.Database.BeginTransaction())
             {
-                // Solo registramos si el usuario ingresó un número (conteo físico > 0)
-                // o si hay una diferencia que requiere ajuste.
-                if (item.PhysicalStock == 0 && item.TheoreticalStock == 0) continue;
-                if (item.PhysicalStock == 0 && item.TheoreticalStock != 0)
+                try
                 {
-                    // Si el usuario dejó en 0 pero había stock, preguntamos o asumimos que es 0 real
-                    // Para este sistema, asumiremos que 0 es un conteo válido.
-                }
-
-                var product = _context.Products.Find(item.ProductId);
-                if (product != null)
-                {
-                    int diff = item.PhysicalStock - product.Stock;
-                    
-                    // Crear SIEMPRE un nuevo registro para el historial
-                    var newRecord = new Models.DailyInventoryAudit
+                    foreach (var item in InventoryAudit)
                     {
-                        Date = now, // Hora exacta
-                        ProductId = item.ProductId,
-                        PhysicalStock = item.PhysicalStock,
-                        UserId = AppSession.CurrentUser?.Id ?? 0,
-                        Note = diff == 0 ? "Conteo: Correcto" : $"Ajuste: {(diff > 0 ? "+" : "")}{diff} pzas (Antes: {product.Stock})"
-                    };
-                    
-                    _context.DailyInventoryAudits.Add(newRecord);
+                        // Solo registramos si el usuario ingresó un número (conteo físico > 0)
+                        // o si hay una diferencia que requiere ajuste.
+                        if (item.PhysicalStock == 0 && item.TheoreticalStock == 0) continue;
+                        if (item.PhysicalStock == 0 && item.TheoreticalStock != 0)
+                        {
+                            // Si el usuario dejó en 0 pero había stock, asumimos que 0 es un conteo válido.
+                        }
 
-                    // Actualizar el stock real del producto
-                    product.Stock = item.PhysicalStock;
-                    item.TheoreticalStock = item.PhysicalStock;
-                    anyChange = true;
+                        var product = _context.Products.Find(item.ProductId);
+                        if (product != null)
+                        {
+                            int diff = item.PhysicalStock - product.Stock;
+                            
+                            // Crear SIEMPRE un nuevo registro para el historial
+                            var newRecord = new Models.DailyInventoryAudit
+                            {
+                                Date = now, // Hora exacta
+                                ProductId = item.ProductId,
+                                PhysicalStock = item.PhysicalStock,
+                                UserId = AppSession.CurrentUser?.Id ?? 0,
+                                Note = diff == 0 ? "Conteo: Correcto" : $"Ajuste: {(diff > 0 ? "+" : "")}{diff} pzas (Antes: {product.Stock})"
+                            };
+                            
+                            _context.DailyInventoryAudits.Add(newRecord);
+
+                            // Actualizar el stock real del producto
+                            product.Stock = item.PhysicalStock;
+                            item.TheoreticalStock = item.PhysicalStock;
+                            anyChange = true;
+                        }
+                    }
+
+                    if (anyChange)
+                    {
+                        _context.SaveChanges();
+
+                        // Registrar auditoría de ajuste de inventario
+                        try
+                        {
+                            var audit = new Audit { UserId = AppSession.CurrentUser?.Id ?? 0, Action = "SaveAudit", Entity = "DailyInventoryAudit", Data = $"ItemsAdjusted:{InventoryAudit.Count};TotalLoss:{FinancialLoss}", Timestamp = DateTime.Now, ShiftId = ActiveShift?.Id };
+                            _context.Audits.Add(audit);
+                            _context.SaveChanges();
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Log("Failed to write audit for SaveAudit", ex);
+                        }
+
+                        tx.Commit();
+
+                        // Resetear a 0 para el siguiente conteo limpio
+                        foreach (var item in InventoryAudit)
+                        {
+                            item.PhysicalStock = 0;
+                        }
+                        UpdateAuditTotals();
+
+                        System.Windows.MessageBox.Show("Cambios aplicados y registrados en el historial de reportes.", "Éxito", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                    }
                 }
-            }
-
-            if (anyChange)
-            {
-                _context.SaveChanges();
-                
-                // Resetear a 0 para el siguiente conteo limpio
-                foreach (var item in InventoryAudit)
+                catch (Exception ex)
                 {
-                    item.PhysicalStock = 0;
+                    try { tx.Rollback(); } catch { }
+                    Logger.Log("Failed to save inventory audit", ex);
+                    System.Windows.MessageBox.Show("No se pudo guardar la auditoría: " + ex.Message, "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 }
-                UpdateAuditTotals();
-
-                System.Windows.MessageBox.Show("Cambios aplicados y registrados en el historial de reportes.", "Éxito", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
             }
         }
 
@@ -332,9 +412,36 @@ namespace BakeryPOS.ViewModels
                 .Sum(s => s.Quantity);
 
             ActiveShift.IsClosed = true;
-
-            _context.SaveChanges();
             
+            using (var tx = _context.Database.BeginTransaction())
+            {
+                try
+                {
+                    _context.SaveChanges();
+
+                    // Audit close shift
+                    try
+                    {
+                        var audit = new Audit { UserId = AppSession.CurrentUser?.Id ?? 0, Action = "CloseShift", Entity = "Shift", Data = $"ShiftId:{ActiveShift.Id};ActualCash:{ActiveShift.ActualEndingCash}", Timestamp = DateTime.Now, ShiftId = ActiveShift.Id };
+                        _context.Audits.Add(audit);
+                        _context.SaveChanges();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Log("Failed to write audit for CloseShift", ex);
+                    }
+
+                    tx.Commit();
+                }
+                catch (Exception ex)
+                {
+                    try { tx.Rollback(); } catch { }
+                    Logger.Log("Failed to close shift", ex);
+                    System.Windows.MessageBox.Show("No se pudo cerrar el turno: " + ex.Message, "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                    return;
+                }
+            }
+
             // Backup Database on close
             BackupDatabase();
 
@@ -352,23 +459,35 @@ namespace BakeryPOS.ViewModels
         {
             try
             {
-                var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                string sourceDb = System.IO.Path.Join(localAppData, "BakeryPOS", "bakery_pos.db");
-                
-                var myDocuments = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                string backupFolder = System.IO.Path.Join(myDocuments, "BakeryPOS_Backups");
-                System.IO.Directory.CreateDirectory(backupFolder);
+                var sourceDb = Settings.DatabasePath;
+                var backupFolder = Settings.BackupFolderPath;
+                Directory.CreateDirectory(backupFolder);
+                string destDb = Path.Combine(backupFolder, $"bakery_pos_backup_{DateTime.Now:yyyyMMdd_HHmmss}.db");
+                string tmp = destDb + ".tmp";
 
-                string destDb = System.IO.Path.Join(backupFolder, $"bakery_pos_backup_{DateTime.Now:yyyyMMdd_HHmmss}.db");
-                
-                if (System.IO.File.Exists(sourceDb))
+                if (File.Exists(sourceDb))
                 {
-                    System.IO.File.Copy(sourceDb, destDb, overwrite: true);
+                    try
+                    {
+                        using (var sourceStream = new FileStream(sourceDb, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                        using (var destStream = new FileStream(tmp, FileMode.Create, FileAccess.Write, FileShare.None))
+                        {
+                            sourceStream.CopyTo(destStream);
+                        }
+                        // Replace atomically
+                        if (File.Exists(destDb)) File.Delete(destDb);
+                        File.Move(tmp, destDb);
+                        Logger.LogInfo($"Backup created: {destDb}");
+                    }
+                    catch (IOException ioEx)
+                    {
+                        Logger.Log("Backup IO error", ioEx);
+                    }
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error backing up DB: {ex.Message}");
+                Logger.Log("Error backing up DB", ex);
             }
         }
     }

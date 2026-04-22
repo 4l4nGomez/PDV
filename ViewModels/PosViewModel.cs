@@ -353,46 +353,88 @@ namespace BakeryPOS.ViewModels
                     return null;
                 }
 
-                var sale = new Sale
+                using (var tx = context.Database.BeginTransaction())
                 {
-                    SaleDate = DateTime.Now,
-                    UserId = AppSession.CurrentUser.Id,
-                    ShiftId = shift.Id,
-                    TotalAmount = TicketTotal,
-                    PaymentMethod = "Efectivo"
-                };
-
-                context.Sales.Add(sale);
-                context.SaveChanges(); // Para obtener SaleId
-
-                foreach (var item in CurrentTicket)
-                {
-                    var saleItem = new SaleItem
+                    try
                     {
-                        SaleId = sale.Id,
-                        ProductId = item.ProductId,
-                        Quantity = item.Quantity,
-                        UnitPrice = item.UnitPrice,
-                        Discount = item.Discount,
-                        SubTotal = item.SubTotal
-                    };
-                    context.SaleItems.Add(saleItem);
+                        var sale = new Sale
+                        {
+                            SaleDate = DateTime.Now,
+                            UserId = AppSession.CurrentUser.Id,
+                            ShiftId = shift.Id,
+                            TotalAmount = TicketTotal,
+                            PaymentMethod = "Efectivo"
+                        };
 
-                    // Actualizar stock en DB
-                    var dbProduct = context.Products.Find(item.ProductId);
-                    if (dbProduct != null)
+                        context.Sales.Add(sale);
+                        context.SaveChanges(); // Para obtener SaleId
+
+                        foreach (var item in CurrentTicket)
+                        {
+                            var saleItem = new SaleItem
+                            {
+                                SaleId = sale.Id,
+                                ProductId = item.ProductId,
+                                Quantity = item.Quantity,
+                                UnitPrice = item.UnitPrice,
+                                Discount = item.Discount,
+                                SubTotal = item.SubTotal
+                            };
+                            context.SaleItems.Add(saleItem);
+
+                            // Actualizar stock en DB (verificar disponibilidad)
+                            var dbProduct = context.Products.Find(item.ProductId);
+                            if (dbProduct != null)
+                            {
+                                if (dbProduct.Stock < item.Quantity)
+                                {
+                                    System.Windows.MessageBox.Show($"Stock insuficiente para {dbProduct.Name}.", "Stock insuficiente", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                                    tx.Rollback();
+                                    return null;
+                                }
+                                dbProduct.Stock -= item.Quantity;
+                            }
+                        }
+
+                        context.SaveChanges();
+
+                        // Registrar auditoría mínima para la venta
+                        try
+                        {
+                            var audit = new Audit
+                            {
+                                UserId = AppSession.CurrentUser?.Id ?? 0,
+                                Action = "CreateSale",
+                                Entity = "Sale",
+                                Data = $"SaleId:{sale.Id};Total:{sale.TotalAmount}",
+                                Timestamp = DateTime.Now,
+                                ShiftId = shift.Id
+                            };
+                            context.Audits.Add(audit);
+                            context.SaveChanges();
+                        }
+                        catch (Exception ex)
+                        {
+                            // Non-fatal: log but don't block the sale if audit insert fails
+                            Logger.Log("Failed to write audit for sale", ex);
+                        }
+
+                        tx.Commit();
+
+                        CurrentTicket.Clear();
+                        RecalculateTotal();
+                        CashReceivedText = "";
+                        RequestSearchFocus?.Invoke();
+                        return sale;
+                    }
+                    catch (Exception ex)
                     {
-                        dbProduct.Stock -= item.Quantity;
+                        try { tx.Rollback(); } catch { }
+                        Logger.Log("Checkout failed", ex);
+                        System.Windows.MessageBox.Show("Error al registrar la venta: " + ex.Message, "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                        return null;
                     }
                 }
-
-                context.SaveChanges();
-
-                CurrentTicket.Clear();
-                RecalculateTotal();
-                CashReceivedText = "";
-                RequestSearchFocus?.Invoke();
-                return sale;
             }
         }
 

@@ -2,6 +2,8 @@ using BakeryPOS.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Linq;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace BakeryPOS.ViewModels
 {
@@ -57,34 +59,51 @@ namespace BakeryPOS.ViewModels
             {
                 Interval = System.TimeSpan.FromMinutes(30)
             };
-            _autoBackupTimer.Tick += (s, e) => AutoBackupDatabase();
+            // Use an async handler so the UI thread is never blocked by IO operations.
+            _autoBackupTimer.Tick += async (s, e) => await AutoBackupDatabaseAsync();
             _autoBackupTimer.Start();
         }
 
-        private void AutoBackupDatabase()
+        private async Task AutoBackupDatabaseAsync()
         {
             try
             {
-                var localAppData = System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData);
-                string sourceDb = System.IO.Path.Join(localAppData, "BakeryPOS", "bakery_pos.db");
-                
-                var myDocuments = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
-                string backupFolder = System.IO.Path.Join(myDocuments, "BakeryPOS_Backups", "Automaticas");
-                System.IO.Directory.CreateDirectory(backupFolder);
+                var sourceDb = Settings.DatabasePath;
+                string backupFolder = Settings.BackupFolderPath;
+                Directory.CreateDirectory(backupFolder);
+                string destDb = Path.Combine(backupFolder, $"bakery_pos_auto_{DateTime.Now:yyyyMMdd_HHmm}.db");
 
-                string destDb = System.IO.Path.Join(backupFolder, $"bakery_pos_auto_{System.DateTime.Now:yyyyMMdd_HHmm}.db");
-                
-                if (System.IO.File.Exists(sourceDb))
+                // Try to copy with retries to avoid transient locking issues when DB is in use.
+                const int maxAttempts = 3;
+                for (int attempt = 1; attempt <= maxAttempts; attempt++)
                 {
-                    System.IO.File.Copy(sourceDb, destDb, overwrite: true);
-                    
-                    // Opcional: Limpiar copias muy antiguas para no saturar el disco (mantener últimas 50)
-                    var files = new System.IO.DirectoryInfo(backupFolder).GetFiles("*.db")
-                                    .OrderByDescending(f => f.CreationTime).Skip(50);
-                    foreach (var file in files) file.Delete();
+                    try
+                    {
+                        using (var sourceStream = new FileStream(sourceDb, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                        using (var destStream = new FileStream(destDb, FileMode.Create, FileAccess.Write, FileShare.None))
+                        {
+                            await sourceStream.CopyToAsync(destStream);
+                        }
+
+                        // Clean old backups (keep latest 50)
+                        var files = new DirectoryInfo(backupFolder).GetFiles("*.db")
+                                        .OrderByDescending(f => f.CreationTime).Skip(50);
+                        foreach (var file in files) file.Delete();
+
+                        Logger.LogInfo($"Automatic backup created: {destDb}");
+                        break;
+                    }
+                    catch (IOException ioEx) when (attempt < maxAttempts)
+                    {
+                        Logger.Log($"Backup attempt {attempt} failed due to IO. Retrying...", ioEx);
+                        await Task.Delay(1000 * attempt);
+                    }
                 }
             }
-            catch { /* Ignorar errores silenciosos en backup automático para no molestar al usuario */ }
+            catch (Exception ex)
+            {
+                Logger.Log("Error during automatic backup", ex);
+            }
         }
 
         // Comandos globales que delegan en el PosViewModel para mantener atajos funcionales

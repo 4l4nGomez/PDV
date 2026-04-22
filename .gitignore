@@ -40,3 +40,5 @@ bld/
 # Packages
 *.nuget.props
 *.nuget.targets
+
+distribucion/
